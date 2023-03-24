@@ -1,0 +1,22 @@
+SecurityID [证券ID] - ‘209’+9位自增长序列。如：209000000001、209000000002、………
+TradingDate [交易日期] - 以yyyy-mm-dd表示
+Symbol [交易代码] - ETF期权合约从90000001起按序对新挂牌合约进行编排，唯一，不复用。股票期权合约从10000001起按序对新挂牌合约进行编排，唯一，不复用。
+ExchangeCode [交易所代码] - SSE=上海证券交易所，SZSE=深圳证券交易所。
+ShortName [合约简称] - 
+ContractCode [合约编码] - 
+TradingDayStatusID [交易日状态编码] - P5901=首日上市，P5902=正常交易日，P5903=最后交易日
+StatusID [交易状态编码] - P0801=正常交易，P08041=盘中临时停牌且日终前复牌，P08042=盘中停牌至收盘,P0804=全天停牌。
+UnderlyingSecuritySymbol [标的证券交易代码] - 
+CallOrPut [认购认沽] - 
+Filling [填充标识] - 0=正常交易日,不填充，1=周一至周五的非节假日填充，2=周一至周五的节假日填充。
+OpenPrice [日开盘价] - 
+HighPrice [日最高价] - 
+LowPrice [日最低价] - 
+ClosePrice [日收盘价] - 
+SettlePrice [日结算价] - 
+Change1 [涨跌1] - 日收盘价减去昨结算价
+Change2 [涨跌2] - 日结算价减去昨结算价
+Volume [成交量] - 
+Position [持仓量] - 
+Amount [成交金额] - 
+DataType [数据类型] - 1=正式交易；2=仿真交易。
