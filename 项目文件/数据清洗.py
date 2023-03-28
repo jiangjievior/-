@@ -7,21 +7,27 @@ import os
 
 
 # 提取50ETF期权数据
-def get_data(
-        path_option_price='',
-        path_option_volume='',
-):
+def get_data():
     #期权价格数据
-    option_price=pd.read_csv(path_option_price)
+    option_price=pd.read_csv(PATH_PARAMETERS)
     data=option_price[option_price['ShortName'].str[:5]=='50ETF']
     data=data[data['DataType']==1]
     data.dropna(inplace=True)
 
     #增加期权交易量数据
-    option_volume=pd.read_csv(path_option_volume)
+    option_volume=pd.read_csv(PATH_BASIC)
     data=pd.merge(data,option_volume[['TradingDate',
        'ContractCode','SettlePrice', 'Change1',
        'Change2', 'Volume', 'Position', 'Amount']],on=['TradingDate','ContractCode'])
+
+    #计算期权的次日价格
+    #为了方便，直接排序平移，因此会把第二个期权的初始价格移动至第一个期权的末尾，需要处理！！
+    data.sort_values(['ContractCode','TradingDate'],inplace=True)
+    data['next_Close']=data['ClosePrice'].shift(-1)
+
+    #增加期货交易价格数据
+    future=pd.read_csv(PATH_50ETF_FUTURE)
+    future
 
 
     return data
@@ -35,11 +41,14 @@ def clean_data(data,
     # 剔除交易日合约数量低于0的样本
     data = data[data['Volume'] > 0]
 
+    #剔除交易日开仓头寸低于0的样本
+    data=data[data['Position']>0]
+
     # 剔除delta绝对值高于0.8或低于0.02的样本
     data = data[(data['Delta'].abs() <= 0.98) & ((data['Delta'].abs() >= 0.02))]
 
-    # 剔除剩余到期时间低于五个交易日
-    data=data[data['RemainingTerm']>=5/365]
+    # 剔除剩余到期时间低于7个交易日
+    data=data[data['RemainingTerm']>=7/365]
 
     # 剔除不满足套利条件的样本
     data_c = data[data['CallOrPut'] == 'C']
@@ -73,9 +82,7 @@ def clean_data(data,
 
 
 if __name__=='__main__':
-    data=get_data(path_option_price=data_real_path('数据文件/原始数据/期权收盘价/SO_PricingParameter.csv'),
-                  path_option_volume=data_real_path('数据文件/原始数据/期权交易量数据/SO_QuotationBas.csv')
-                  )
+    data=get_data()
     data=clean_data(data)
 
 

@@ -46,7 +46,7 @@ def construct_volatility_surface(
     #建立隐含波动率曲面时间序列
 
     #将底部格点恢复成并列结构
-    grids=[[x,y] for x in grids[0] for y in grids[1]]
+    grids=[[x,y] for x in grids[0] for y in WINDOWS_YEARS]
     volatility_surface=pd.DataFrame(grids,columns=['K/S','years'])
     volatility_surface['(K/S)^2'] = volatility_surface['K/S'] ** 2
     volatility_surface['years*(K/S)'] = volatility_surface['years'] * volatility_surface['K/S']

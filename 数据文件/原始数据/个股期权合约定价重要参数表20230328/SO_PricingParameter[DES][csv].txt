@@ -1,0 +1,22 @@
+SecurityID [证券ID] - ‘209’+9位自增长序列。如：209000000001、209000000002、………
+ContractCode [合约编码] - 
+ShortName [合约简称] - 
+CallOrPut [认购认沽] - 
+TradingDate [交易日期] - 
+DataType [数据类型] - 1=正式交易；2=仿真交易。
+Symbol [交易代码] - ETF期权合约从90000001起按序对新挂牌合约进行编排，唯一，不复用。股票期权合约从10000001起按序对新挂牌合约进行编排，唯一，不复用。
+ExchangeCode [交易所代码] - SSE=上海证券交易所，SZSE=深圳证券交易所。
+StrikePrice [行权价] - 
+ExerciseDate [行权日] - 
+ClosePrice [收盘价] - 
+UnderlyingScrtClose [标的证券收盘价] - 
+RemainingTerm [剩余年限] - 
+RisklessRate [无风险利率(%)] - 
+HistoricalVolatility [历史波动率] - 字段说明见说明书“附录”。
+ImpliedVolatility [隐含波动率] - 字段说明见说明书“附录”。
+TheoreticalPrice [理论价格] - 
+Delta [Delta] - 字段说明见说明书“附录”。
+Gamma [Gamma] - 字段说明见说明书“附录”。
+Vega [Vega] - 字段说明见说明书“附录”。
+Theta [Theta] - 字段说明见说明书“附录”。
+Rho [Rho] - 字段说明见说明书“附录”。

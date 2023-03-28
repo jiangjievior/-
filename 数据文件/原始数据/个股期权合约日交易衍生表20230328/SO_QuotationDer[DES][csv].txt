@@ -1,0 +1,27 @@
+SecurityID [证券ID] - ‘209’+9位自增长序列。如：209000000001、209000000002、………
+Symbol [交易代码] - ETF期权合约从90000001起按序对新挂牌合约进行编排，唯一，不复用。股票期权合约从10000001起按序对新挂牌合约进行编排，唯一，不复用。
+ContractCode [合约编码] - 
+ShortName [合约简称] - 
+TradingDate [交易日期] - 以yyyy-mm-dd表示
+DataType [数据类型] - 1=正式交易；2=仿真交易。
+ExchangeCode [交易所代码] - SSE=上海证券交易所，SZSE=深圳证券交易所。
+CallOrPut [认购认沽] - 
+UnderlyingSecurityID [标的证券ID] - 
+Filling [填充标识] - 0=正常交易日,不填充，1=周一至周五的非节假日填充，2=周一至周五的节假日填充。
+ContinueSign [连续合约标识] - 
+MainSign [主力合约标识] - 一个品种下，每日交易最活跃的合约。1=是；2=否。
+PreClosePrice [昨收盘价] - 
+PreSettlePrice [昨结算价] - 
+PrePosition [昨持仓量] - 
+PositionChange [持仓量变化] - 
+AvgPrice [成交均价] - 
+ClosePriceChangeRatio [涨跌幅(收盘价)(%)] - 
+SettlePriceChangeRatio [涨跌幅(结算价)(%)] - 
+Amplitude [振幅(%)] - （日最高价-日最低价）*100/日收盘价
+LimitUp [涨停价] - 字段说明见说明书“附录”。
+LimitDown [跌停价] - 字段说明见说明书“附录”。
+InitialMargin [当日单张初始保证金] - 字段说明见说明书“附录”。
+MaintainingMargin [当日单张维持保证金] - 字段说明见说明书“附录”。
+InitialMarginRatio [当日初始保证金比例(%)] - 字段说明见说明书“附录”。
+MaintainingMarginRatio [当日维持保证金比例(%)] - 字段说明见说明书“附录”。
+ChangeRatio [涨跌幅] - 
