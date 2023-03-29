@@ -6,13 +6,7 @@ import sas7bdat
 from sas7bdat import SAS7BDAT
 from 功能文件.辅助功能.Debug时获取外部数据绝对路径 import data_real_path
 from 项目文件.数据清洗 import get_data
-
-
-def gains_delta_neutral(path_option):
-
-    data=pd.read_csv(path_option)
-
-    pass
+from 数据文件.基本参数 import *
 
 
 #计算期权delta中性收益
@@ -37,7 +31,6 @@ class DeltaNeutralGains():
         self.option=self.option[self.option[self.col_RemainingTerm]<=60/365]
         #剔除实值期权
         self.option=self.option[self.option[self.col_Delta].abs()<=0.5]
-
 
 
 
@@ -69,22 +62,10 @@ class DeltaNeutralGains():
         self.col_Volume='Volume'
         self.col_Position='Position'
         self.col_Amount='Amount'
-        
-
-
-    #计算指定合约在某个交易日的未来一个月内的delta中性收益
-    def gains_to_maturity(self,
-                          date='',
-                          ):
-
-
-        Symbol=10001174
-        TradingDate='2018-01-26'
-        data=self.option[(self.option[self.col_Symbol]==Symbol)&(self.option[self.col_TradingDate]>=TradingDate)]
 
 
 
-    def run(self):
+    def run(self,path_save):
 
         #计算次日股票价格
         ETF=self.option[[self.col_TradingDate,self.col_UnderlyingScrtClose]].drop_duplicates().sort_values(self.col_TradingDate)
@@ -98,41 +79,7 @@ class DeltaNeutralGains():
                              (self.option[self.col_ClosePrice]-self.option[self.col_Delta]*self.option[self.col_UnderlyingScrtClose])*self.tao
         self.option['gains'].describe()
 
-        self.option.to_csv(data_real_path('数据文件/生成数据')+'/陈蓉2011delta中性收益率.csv',encoding='utf_8_sig',index=False)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        for date in self.expiration:
-            for type in self.option[self.col_CallOrPut].unique():
-                data=self.option[(self.option[self.col_ExerciseDate]==date)&(self.option[self.col_CallOrPut]==type)]
-                optionCodes=data[self.col_ContractCode].unique()
-                for optionCode in optionCodes:
-                    data_=data[data[self.col_ContractCode]==optionCode]
-
-
-
-
-
-                pass
-
-
+        self.option.to_csv(path_save,encoding='utf_8_sig',index=False)
 
 
 
@@ -144,15 +91,11 @@ class DeltaNeutralGains():
 
 
 if __name__=='__main__':
-    path_option=data_real_path('数据文件/生成数据/上证50ETF期权数据.csv')
 
-    DNG=DeltaNeutralGains(path_option)
-    DNG.run()
+    DNG=DeltaNeutralGains(path_option=PATH_50ETF_OPTION)
+    DNG.run(path_save=PATH_GAINS_DELTA_NEUTRAL_ChenRong2011)
 
 
-    DNG.gains_to_maturity()
-    data=DNG.option[(DNG.option['TradingDate']=='2018-01-26')]
-    data.sort_values([DNG.col_CallOrPut, DNG.col_RemainingTerm, DNG.col_Delta])
 
 
 

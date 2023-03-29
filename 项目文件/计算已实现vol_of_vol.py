@@ -92,6 +92,44 @@ def realized_vol_of_vol(
             VV_s.to_csv(PATH_P_VV_2,encoding='utf_8_sig',index=False)
 
 
+    #参考 Implied volatility information of Chinese SSE 50 ETF options.pdf
+    elif type==3:
+        data = pd.read_csv(PATH_50ETF_1MIN)
+        data = data[data['trade_time'] >= '2023-02-01 00:00:00'].reset_index()
+
+        data['r']=np.log(data['close']/data['close'].shift())
+        #计算5分钟已实现波动率
+        N=5
+        length=15
+        realized_Vol=[]
+        for i in range(length-1,len(data)):
+            vol=np.sqrt((data.loc[(i-length-1):i,'r']**2).sum()/length*N)
+            realized_Vol.append([data.loc[i,'trade_time'],vol])
+            print(f'计算已实现波动率完成{data.loc[i,"trade_time"]}')
+        realized_Vol=pd.DataFrame(realized_Vol,columns=['trade_time','vol'])
+
+        #筛选出来五分钟已实现波动率
+        realized_Vol=realized_Vol.loc[realized_Vol['trade_time'].astype(str).str[15]=='5',:]
+
+        #计算日度已实现波动率的波动率
+        realized_Vol['trade_date']=realized_Vol['trade_time'].str[:10]
+        vol_of_vol_s=[]
+        for date in realized_Vol['trade_date'].unique():
+            Vol_date = realized_Vol.loc[realized_Vol['trade_date'] == date, 'vol']
+            mean_Vol = Vol_date.mean()
+
+            vol_of_vol = np.sqrt(sum((Vol_date - mean_Vol) ** 2) / N) / mean_Vol
+
+            vol_of_vol_s.append([date, vol_of_vol])
+        vol_of_vol_s = pd.DataFrame(vol_of_vol_s, columns=['date', 'vol_of_vol'])
+
+
+        if path_save:
+            vol_of_vol_s.to_csv(path_save,encoding='utf_8_sig',index=False)
+
+
+
+
 
 
 
@@ -101,7 +139,7 @@ def realized_vol_of_vol(
 
 
 if __name__=='__main__':
-    realized_vol_of_vol(type=2,path_save=PATH_P_VV_2)
+    realized_vol_of_vol(type=3,path_save=PATH_P_VV)
 
 
 

@@ -35,6 +35,7 @@ def implied_vol_of_vol(path_surface_series:str,#隐含波动率曲面时间序�
             continue
 
     vol_of_vol_s=pd.DataFrame(vol_of_vol_s,index=surface_series.columns).T
+    vol_of_vol_s.index.name='trade_date'
     if path_save:
         vol_of_vol_s.to_csv(path_save,encoding='utf_8_sig')
 
