@@ -5,6 +5,7 @@ import pandas as pd
 import numpy as np
 import os
 
+from 项目文件.拟合delta中性收益与风险的时间序列关系 import SeriesOlsGainsAndRisk
 from 项目文件.数据清洗 import get_data, clean_data
 
 
@@ -28,7 +29,7 @@ from 项目文件.数据清洗 import get_data, clean_data
 # option = pd.read_csv(PATH_50ETF_OPTION)
 # construct_volatility_surface(data=option,
 #                              grids=[
-#                                  [0.8, 0.9, 1, 1.1, 1.2],#在值程度
+#                                  MONEYNESS_KF,#在值程度
 #                                  WINDOWS_YEARS_NATURAL#剩余到期时间
 #                              ],
 #                              path_save=PATH_IV_SURFACE_SERIES
@@ -69,7 +70,7 @@ from 项目文件.数据清洗 import get_data, clean_data
 
 ########################################################################################################################
 #五.计算期权delta中性收益
-########################################################################################################################
+#######################################################################################################################
 # from 项目文件.计算delta中性收益 import DeltaNeutralGains
 #
 # DNG = DeltaNeutralGains(path_option=PATH_50ETF_OPTION)
@@ -80,9 +81,20 @@ from 项目文件.数据清洗 import get_data, clean_data
 #六.用波动率和波动率的波动率预测期权delta中性收益
 ########################################################################################################################
 
+# 普通OLS回归:用 gains/S = IV + PVV + gains/S(-1) 在时间序列上回归
+# gains/S 是一个单条时间序列，每个时间点上的值为所有moneyness对应的均值
+SOGAR = SeriesOlsGainsAndRisk()
+SOGAR.run_1()
 
+# 普通OLS回归:用 gains/S = RV + PVV + gains/S(-1) 在时间序列上回归
+# gains/S 是一个单条时间序列，每个时间点上的值为所有moneyness对应的均值
+SOGAR = SeriesOlsGainsAndRisk()
+SOGAR.run_2()
 
-
+# 普通OLS回归:用 gains/S = IV + PVV + gains/S(-1) 在时间序列上回归
+# gains/S 是多条时间序列，按照moneyness(K/F)分别在每种moneyness上进行回归
+SOGAR = SeriesOlsGainsAndRisk()
+SOGAR.run_3()
 
 
 

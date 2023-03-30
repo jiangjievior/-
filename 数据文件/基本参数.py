@@ -1,4 +1,5 @@
 from 功能文件.辅助功能.Debug时获取外部数据绝对路径 import data_real_path
+import pandas as pd
 
 #原始数据路径
 PATH_PARAMETERS=data_real_path('数据文件/原始数据/个股期权合约定价重要参数表20230328/SO_PricingParameter.csv')
@@ -75,16 +76,25 @@ class Columns():
     RV = 'RV'
     KF='K/F'#在值程度：执行价格/远期价格，参考陈蓉(2010)《隐含波动率曲面_建模与实证_陈蓉》.P144
     KF_bin='K/F_bin'
+    KF_minus_1 = 'K/F-1'
+    KF_minus_1_bin = 'K/F-1_bin'
 
 
 C= Columns()
 
+#建立隐含波动率曲面时间序列
+MONEYNESS_KF=[0.95,0.97,1,1.03,1.05]#在值程度，用于建立隐含波动率曲面底盘，参考陈蓉（2010）《隐含波动率曲面_建模与实证_陈蓉》
+
+
+
 
 #拟合delta中性收益与风险的时间序列关系
-COL_QVV=[f'QVV{x}' for x in WINDOWS_DAYS]
-
-
-
+COL_IV=[f'IV{x}' for x in WINDOWS_DAYS_NATURAL]
+COL_QVV=[f'QVV{x}' for x in WINDOWS_DAYS_NATURAL]
+PATH_GAINS_OLS_RV_and_QVV=data_real_path('数据文件/生成数据') + '/GAINS_OLS_RV_and_QVV回归结果.csv'
+PATH_GAINS_OLS_IV_and_QVV=data_real_path('数据文件/生成数据') + '/GAINS_OLS_IV_and_QVV回归结果.csv'
+PATH_Moneyness_GAINS_OLS_IV_and_QVV=data_real_path('数据文件/生成数据') + '/基于不同在值程度的GAINS_OLS_IV_and_QVV回归结果.csv'
+MONEYNESS_BIN=pd.IntervalIndex.from_tuples([(-0.03, 0.03), (0.03, 0.1), (-0.1, -0.03)])
 
 
 
