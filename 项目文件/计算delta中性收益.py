@@ -23,14 +23,14 @@ class DeltaNeutralGains():
 
         self.trade_dates=self.option[self.col_TradingDate].unique().tolist()#交易日期
         self.expiration=np.sort(self.option[self.col_ExerciseDate].unique().tolist())#到期日期
-        self.tao=1/365
+        self.tao=1/DAYS_OF_YEAR
 
     #按照陈蓉(2011)的方法筛选样本
     def filter(self):
         #剔除交易日高于60天的期权样本
         self.option=self.option[self.option[self.col_RemainingTerm]<=60/365]
-        #剔除实值期权
-        self.option=self.option[self.option[self.col_Delta].abs()<=0.5]
+        # #剔除实值期权
+        # self.option=self.option[self.option[self.col_Delta].abs()<=0.5]
 
 
 
@@ -65,6 +65,8 @@ class DeltaNeutralGains():
 
 
 
+
+
     def run(self,path_save):
 
         #计算次日股票价格
@@ -73,11 +75,14 @@ class DeltaNeutralGains():
         self.option=pd.merge(self.option,ETF[[self.col_TradingDate,'next_Underlying']],on=[self.col_TradingDate])
 
 
-        self.option['pre_Price']=self.option[self.col_ClosePrice]/(1+self.option['Change1'])
         self.option['gains']=self.option['next_Close']-self.option[self.col_ClosePrice]-self.option[self.col_Delta]*\
         (self.option['next_Underlying']-self.option[self.col_UnderlyingScrtClose])-self.option[self.col_RisklessRate]/100* \
                              (self.option[self.col_ClosePrice]-self.option[self.col_Delta]*self.option[self.col_UnderlyingScrtClose])*self.tao
-        self.option['gains'].describe()
+
+        #计算gains/S
+        self.option[C.Gains_to_underlying]=self.option[C.Gains]/self.option[C.UnderlyingScrtClose]
+        # 计算gains/期权价格
+        self.option[C.Gains_to_option] = self.option[C.Gains] / self.option[C.ClosePrice]
 
         self.option.to_csv(path_save,encoding='utf_8_sig',index=False)
 

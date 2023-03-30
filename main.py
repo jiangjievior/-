@@ -21,59 +21,64 @@ from 项目文件.数据清洗 import get_data, clean_data
 #二.计算隐含波动率 和 隐含波动率的波动率
 # 参考陈蓉（2010）,按照  ln(IV)=b1+b2*K/S+b3*(K/S)^2+b4*years+b5*(years*K/S) 建立隐含波动率曲面
 ########################################################################################################################
-from 项目文件.拟合隐含波动率曲面 import construct_volatility_surface
-from 项目文件.计算隐含vol_of_vol import implied_vol_of_vol
-
+# from 项目文件.拟合隐含波动率曲面 import construct_volatility_surface
+# from 项目文件.计算隐含vol_of_vol import implied_vol_of_vol
+#
 # #1.拟合隐含波动率曲面时间序列
 # option = pd.read_csv(PATH_50ETF_OPTION)
 # construct_volatility_surface(data=option,
 #                              grids=[
 #                                  [0.8, 0.9, 1, 1.1, 1.2],#在值程度
-#                                  WINDOWS_YEARS#剩余到期时间
+#                                  WINDOWS_YEARS_NATURAL#剩余到期时间
 #                              ],
 #                              path_save=PATH_IV_SURFACE_SERIES
 #                              )
-
-#2.计算隐含波动率的波动率
-implied_vol_of_vol(PATH_IV_SURFACE_SERIES,path_save=PATH_Q_VV)
+#
+# #2.计算隐含波动率的波动率
+# implied_vol_of_vol(PATH_IV_SURFACE_SERIES,path_save=PATH_Q_VV)
 
 
 ########################################################################################################################
 #三.计算已实现波动率 和 已实现含波动率的波动率
 ########################################################################################################################
-from 项目文件.计算已实现波动率 import RV
-from 项目文件.计算已实现vol_of_vol import realized_vol_of_vol
+# from 项目文件.计算已实现波动率 import RV
+# from 项目文件.计算已实现vol_of_vol import realized_vol_of_vol
+#
+# #1.计算已实现波动率
+# RV(path_save=PATH_RV)
 
-#1.计算已实现波动率
-RV(path_save=PATH_RV)
-
-#2.计算已实现含波动率的波动率
-realized_vol_of_vol(path_close_5_min=PATH_50ETF_5MIN,
-                    windows=WINDOWS_DAYS,
-                    path_save=PATH_P_VV,
-                    type=1
-                    )
+# #2.计算已实现含波动率的波动率
+# realized_vol_of_vol(path_close_5_min=PATH_50ETF_5MIN,
+#                     windows=WINDOWS_DAYS,
+#                     path_save=PATH_P_VV,
+#                     type=1
+#                     )
 
 ########################################################################################################################
 #四.计算波动率的波动率风险溢价
 ########################################################################################################################
 
-from 项目文件.计算波动率的波动率风险溢价 import Premium_VV
-
-Premium_VV(
-    path_Q_VV=PATH_Q_VV,
-    path_P_VV=PATH_P_VV,
-    type_P_VV=1
-)
+# from 项目文件.计算波动率的波动率风险溢价 import Premium_VV
+#
+# Premium_VV(
+#     path_Q_VV=PATH_Q_VV,
+#     path_P_VV=PATH_P_VV,
+#     type_P_VV=1
+# )
 
 
 ########################################################################################################################
 #五.计算期权delta中性收益
 ########################################################################################################################
-from 项目文件.计算delta中性收益 import DeltaNeutralGains
+# from 项目文件.计算delta中性收益 import DeltaNeutralGains
+#
+# DNG = DeltaNeutralGains(path_option=PATH_50ETF_OPTION)
+# DNG.run(path_save=PATH_GAINS_DELTA_NEUTRAL_ChenRong2011)
 
-DNG = DeltaNeutralGains(path_option=PATH_50ETF_OPTION)
-DNG.run(path_save=PATH_GAINS_DELTA_NEUTRAL_ChenRong2011)
+
+########################################################################################################################
+#六.用波动率和波动率的波动率预测期权delta中性收益
+########################################################################################################################
 
 
 
@@ -83,6 +88,9 @@ DNG.run(path_save=PATH_GAINS_DELTA_NEUTRAL_ChenRong2011)
 
 pass
 
+########################################################################################################################
+#七.用vega和volga预测期权delta中性收益
+########################################################################################################################
 
 
 

@@ -22,19 +22,19 @@ def construct_volatility_surface(
 
     dates=data['TradingDate'].unique()
 
-    # 按照  ln(IV)=b1+b2*K/S+b3*(K/S)^2+b4*years+b5*(years*K/S)
+    # 按照  ln(IV)=b1+b2*K/F+b3*(K/F)^2+b4*years+b5*(years*K/F)
     #参考陈蓉（2010）
     data['ln(IV)']=np.log(data['ImpliedVolatility'])
-    data['K/S'] =data['StrikePrice']/data['UnderlyingScrtClose']
-    data['(K/S)^2'] =data['K/S']**2
+    data['K/F'] =data['StrikePrice']/data['UnderlyingScrtClose']
+    data['(K/F)^2'] =data['K/F']**2
     data['years']=data['RemainingTerm']
-    data['years*(K/S)']=data['years']*data['K/S']
+    data['years*(K/F)']=data['years']*data['K/F']
 
     #拟合隐含波动率曲面模型
     models={}
     for date in dates:
         data_date=data[data['TradingDate']==date]
-        X = data_date[['K/S', '(K/S)^2', 'years', 'years*(K/S)']]  # 解释变量
+        X = data_date[['K/F', '(K/F)^2', 'years', 'years*(K/F)']]  # 解释变量
         X=sm.add_constant(X)
         Y = data_date['ln(IV)']  # 被解释变量
         model, params, tvalues, pvalues, resid, F, p_F, R_2 = OLS_model(X, Y)
@@ -47,16 +47,16 @@ def construct_volatility_surface(
 
     #将底部格点恢复成并列结构
     grids=[[x,y] for x in grids[0] for y in WINDOWS_YEARS]
-    volatility_surface=pd.DataFrame(grids,columns=['K/S','years'])
-    volatility_surface['(K/S)^2'] = volatility_surface['K/S'] ** 2
-    volatility_surface['years*(K/S)'] = volatility_surface['years'] * volatility_surface['K/S']
+    volatility_surface=pd.DataFrame(grids,columns=['K/F','years'])
+    volatility_surface['(K/F)^2'] = volatility_surface['K/F'] ** 2
+    volatility_surface['years*(K/F)'] = volatility_surface['years'] * volatility_surface['K/F']
 
     volatility_surface_series=[]
     for key in models.keys():
         volatility_surface_=copy.deepcopy(volatility_surface)
-        volatility_surface_['ln(IV)']=models[key].predict(sm.add_constant(volatility_surface[['K/S', '(K/S)^2', 'years', 'years*(K/S)']]))
+        volatility_surface_['ln(IV)']=models[key].predict(sm.add_constant(volatility_surface[['K/F', '(K/F)^2', 'years', 'years*(K/F)']]))
         volatility_surface_['IV'] =np.exp(volatility_surface_['ln(IV)'])
-        volatility_surface_['date']=key
+        volatility_surface_[C.TradingDate]=key
 
         volatility_surface_series.append(volatility_surface_)
     volatility_surface_series=pd.concat(volatility_surface_series,axis=0)

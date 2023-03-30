@@ -16,14 +16,14 @@ def RV(path_save=False):
     data = data[data['trade_time'] >= '2015-02-01 00:00:00'].reset_index()
 
     data['r'] = np.log(data['close'] / data['close'].shift())
-    data['trade_date'] = data['trade_time'].astype(str).str[:10]
+    data[C.TradingDate] = data['trade_time'].astype(str).str[:10]
 
     # 已实现波动率
     RV_s = []
-    for date in data['trade_date'].unique():
-        data_date = data[data['trade_date'] == date].dropna()
+    for date in data[C.TradingDate].unique():
+        data_date = data[data[C.TradingDate] == date].dropna()
         RV_s.append([date, np.sqrt(sum(data_date['r'] ** 2))])
-    RV_s = pd.DataFrame(RV_s, columns=['trade_date', 'RV'])
+    RV_s = pd.DataFrame(RV_s, columns=[C.TradingDate, 'RV'])
 
     if path_save:
         RV_s.to_csv(path_save,encoding='utf_8_sig',index=False)

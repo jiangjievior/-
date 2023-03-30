@@ -60,18 +60,6 @@ def COV_between_QVV_and_M():
         corr_s.append([col_VV,r,t])
 
 
-    # for col_VV in col_s:
-    #     under[col_VV]=np.log(under[col_VV]/under[col_VV].shift())
-    #     under.dropna(inplace=True)
-    #     S2xy_1=under[[col_VV,'r_Underlying']]-under[[col_VV,'r_Underlying']].mean()
-    #
-    #     S2xy=sum(S2xy_1[col_VV] * S2xy_1['r_Underlying']) / (len(S2xy_1)-1)
-    #
-    #     tao = abs(sum(S2xy_1[col_VV]**2 * S2xy_1['r_Underlying']**2) / len(S2xy_1)-S2xy)
-    #
-    #     t=S2xy/np.sqrt(tao/len(S2xy_1))
-    #     corr_s.append([col_VV,S2xy,t])
-
 
 
 

@@ -6,19 +6,17 @@ import datetime,time
 import sas7bdat
 from sas7bdat import SAS7BDAT
 from 功能文件.辅助功能.Debug时获取外部数据绝对路径 import data_real_path
+from 数据文件.基本参数 import *
 
 
 #在各个剩余到期时间上，使用平值隐含波动率计算vol-of-vol
 def implied_vol_of_vol(path_surface_series:str,#隐含波动率曲面时间序列
                     path_save:str=False,#历史波动率的波动率的保存路径
-                    col_m:str='K/S',
-                    col_maturity:str='years',
-                    col_IV:str='IV',
-                    col_tradeDate:str='date',
+
                     )->pd.DataFrame:
     surface_series=pd.read_csv(path_surface_series)
-    surface_series=surface_series[surface_series[col_m]==1]
-    surface_series=pd.pivot_table(surface_series,index='date',columns='years',values='IV')
+    surface_series=surface_series[surface_series[C.KF]==1]
+    surface_series=pd.pivot_table(surface_series,index=C.TradingDate,columns='years',values='IV')
 
     date_s=surface_series.index.tolist()
 
@@ -30,12 +28,12 @@ def implied_vol_of_vol(path_surface_series:str,#隐含波动率曲面时间序�
             IV_mean=IV_date.sum()/lags
             vol_of_vol=(np.sqrt(((IV_date-IV_mean)**2).sum()/lags)/IV_mean).tolist()
             vol_of_vol_s[date]=vol_of_vol
-            print(f'计算移动平均vol-of-vol已经完成{date_s.index(date)/len(date_s)}')
+            print(f'计算Q_VV已经完成{date_s.index(date)/len(date_s)}')
         except:
             continue
 
     vol_of_vol_s=pd.DataFrame(vol_of_vol_s,index=surface_series.columns).T
-    vol_of_vol_s.index.name='trade_date'
+    vol_of_vol_s.index.name=C.TradingDate
     if path_save:
         vol_of_vol_s.to_csv(path_save,encoding='utf_8_sig')
 
