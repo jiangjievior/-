@@ -12,10 +12,11 @@ from 数据文件.基本参数 import *
 #在各个剩余到期时间上，使用平值隐含波动率计算vol-of-vol
 def implied_vol_of_vol(path_surface_series:str,#隐含波动率曲面时间序列
                     path_save:str=False,#历史波动率的波动率的保存路径
+                    moneyness=1,#在值程度
 
                     )->pd.DataFrame:
     surface_series=pd.read_csv(path_surface_series)
-    surface_series=surface_series[surface_series[C.KF]==1]
+    surface_series=surface_series[surface_series[C.KF]==moneyness]
     surface_series=pd.pivot_table(surface_series,index=C.TradingDate,columns='years',values='IV')
 
     date_s=surface_series.index.tolist()

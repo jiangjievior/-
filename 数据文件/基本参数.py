@@ -85,7 +85,8 @@ C= Columns()
 #建立隐含波动率曲面时间序列
 MONEYNESS_KF=[0.95,0.97,1,1.03,1.05]#在值程度，用于建立隐含波动率曲面底盘，参考陈蓉（2010）《隐含波动率曲面_建模与实证_陈蓉》
 
-
+#计算期权的delta中性收益
+COL_GAINS=[C.Gains,C.Gains_to_option,C.Gains_to_underlying]#期权收益类型
 
 
 #拟合delta中性收益与风险的时间序列关系
@@ -99,3 +100,9 @@ MONEYNESS_BIN=pd.IntervalIndex.from_tuples([(-0.03, 0.03), (0.03, 0.1), (-0.1, -
 
 
 
+#跳跃风险
+PATH_JUMP=data_real_path('数据文件/生成数据') + '/跳跃风险时间序列.csv'
+
+#深度虚值看跌跳跃、虚值看跌跳跃、平值看跌跳跃、实值看涨跳跃、深度实值看涨跳跃
+COL_JUMP=['JDOP','JOP','JA','JOC','JDOC']#
+PATH_GAINS_OLS_IV_and_QVV_JUMP=data_real_path('数据文件/生成数据') + '/GAINS_OLS_IV_and_QVV_JUMP回归结果.csv'
