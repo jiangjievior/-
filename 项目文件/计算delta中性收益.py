@@ -1,3 +1,6 @@
+import Cython.Compiler.TypeSlots
+import click.decorators
+import commctrl
 import pandas as pd
 import numpy as np
 import os
@@ -71,7 +74,7 @@ class DeltaNeutralGains():
 
         #计算次日股票价格
         ETF=self.option[[self.col_TradingDate,self.col_UnderlyingScrtClose]].drop_duplicates().sort_values(self.col_TradingDate)
-        ETF['next_Underlying']=self.option[self.col_UnderlyingScrtClose].shift(-1)
+        ETF['next_Underlying']=ETF[self.col_UnderlyingScrtClose].shift(-1)
         self.option=pd.merge(self.option,ETF[[self.col_TradingDate,'next_Underlying']],on=[self.col_TradingDate])
 
 
@@ -86,6 +89,87 @@ class DeltaNeutralGains():
 
         self.option.to_csv(path_save,encoding='utf_8_sig',index=False)
 
+        self.option[self.option[C.CallOrPut]=='C'][C.Gains_to_underlying].describe()
+        self.option[self.option[C.CallOrPut] == 'P'][C.Gains_to_underlying].describe()
+
+
+
+# 计算期权delta中性收益,使用上证50ETF期货价格
+# 参考陈蓉（2019），波动率风险和波动率风险溢酬：中国的独特现象
+class DeltaNeutralGains2():
+
+    def __init__(self, path_option
+                 ):
+        self.option = pd.read_csv(path_option)
+        self.option.drop_duplicates(inplace=True)
+
+        self.def_col()  # 定义列标题
+        self.filter()  # 筛选样本
+
+        self.trade_dates = self.option[self.col_TradingDate].unique().tolist()  # 交易日期
+        self.expiration = np.sort(self.option[self.col_ExerciseDate].unique().tolist())  # 到期日期
+        self.tao = 1 / DAYS_OF_YEAR
+
+    # 按照陈蓉(2011)的方法筛选样本
+    def filter(self):
+        # 剔除交易日高于60天的期权样本
+        self.option = self.option[self.option[self.col_RemainingTerm] <= 60 / 365]
+        # #剔除实值期权
+        # self.option=self.option[self.option[self.col_Delta].abs()<=0.5]
+
+    # 为了调用方便，定义列标题
+    def def_col(self):
+        self.col_SecurityID = 'SecurityID'
+        self.col_Symbol = 'Symbol'
+        self.col_ExchangeCode = 'ExchangeCode'
+        self.col_ContractCode = 'ContractCode'
+        self.col_ShortName = 'ShortName'
+        self.col_CallOrPut = 'CallOrPut'
+        self.col_StrikePrice = 'StrikePrice'
+        self.col_ExerciseDate = 'ExerciseDate'
+        self.col_TradingDate = 'TradingDate'
+        self.col_ClosePrice = 'ClosePrice'
+        self.col_UnderlyingScrtClose = 'UnderlyingScrtClose'
+        self.col_RemainingTerm = 'RemainingTerm'
+        self.col_RisklessRate = 'RisklessRate'
+        self.col_HistoricalVolatility = 'HistoricalVolatility'
+        self.col_ImpliedVolatility = 'ImpliedVolatility'
+        self.col_TheoreticalPrice = 'TheoreticalPrice'
+        self.col_Delta = 'Delta'
+        self.col_Gamma = 'Gamma'
+        self.col_Vega = 'Vega'
+        self.col_Theta = 'Theta'
+        self.col_Rho = 'Rho'
+        self.col_SettlePrice = 'SettlePrice'
+        self.col_Volume = 'Volume'
+        self.col_Position = 'Position'
+        self.col_Amount = 'Amount'
+
+    def run(self, path_save):
+        #读取期货数据
+        future=pd.read_csv(PATH_50ETF_FUTURE)
+        future=future[future['Trdvar']=='上证50股指期货']
+        future.columns
+
+        future.rename(columns={'Trddt':C.TradingDate,'Deldt':C.FutureExpiration,'Clsprc':C.FutureClose},inplace=True)
+        #期货距离到期日天数
+        future['FutureDays']=(pd.to_datetime(future[C.FutureExpiration])-pd.to_datetime(future[C.TradingDate])).astype(str).str[:-4].astype(int)
+        #期货距离到期日年数
+        future[C.FutureRemainingTerm]=future['FutureDays']/365
+        #计算次日期货价格
+        future[C.FutureClose]/=1000
+        future_ = future[[C.TradingDate, C.FutureClose]].drop_duplicates().sort_values(
+            C.TradingDate)
+        future['next_FutureClose'] = future_[C.FutureClose].shift(-1)
+        #期货到期月份
+        future[C.ExpirationMonth]=future[C.FutureExpiration].str[:7]
+        self.option[C.ExpirationMonth]=self.option[C.ExerciseDate].str[:7]
+
+
+
+        self.option=pd.merge(self.option,future[[C.TradingDate,C.FutureClose,C.FutureExpiration,C.FutureRemainingTerm,C.ExpirationMonth,'next_FutureClose']],on=[C.TradingDate,C.ExpirationMonth])
+
+        self.option[C.FutureDelta]=self.option[C.Delta]*np.exp(-self.option[C.FutureRemainingTerm]*self.option[C.RisklessRate]/100)
 
 
 
@@ -93,9 +177,39 @@ class DeltaNeutralGains():
 
 
 
+
+
+
+
+
+        # 计算次日股票价格
+
+        self.option['gains'] = self.option['next_Close'] - self.option[self.col_ClosePrice] - self.option[
+            C.FutureDelta] * \
+                               (self.option['next_FutureClose'] - self.option[C.FutureClose]) - \
+                               self.option[self.col_RisklessRate] / 100 * \
+                               (self.option[self.col_ClosePrice] - self.option[C.FutureDelta] * self.option[
+                                   C.FutureClose]) * self.tao
+
+        # 计算gains/S
+        self.option[C.Gains_to_underlying] = self.option[C.Gains] / self.option[C.UnderlyingScrtClose]
+        # 计算gains/期权价格
+        self.option[C.Gains_to_option] = self.option[C.Gains] / self.option[C.ClosePrice]
+
+        # C_gains=self.option[self.option[C.CallOrPut]=='C']
+        # C_gains=C_gains[C_gains[C.TradingDate]<='2016-12-31']
+        # C_gains[C.Gains_to_underlying].describe()
+        # pd.pivot_table(C_gains,index=[C.TradingDate],values=[C.Gains_to_underlying]).describe()
+
+
+
+
+        self.option.to_csv(path_save, encoding='utf_8_sig', index=False)
 
 
 if __name__=='__main__':
+    # DNG = DeltaNeutralGains2(path_option=PATH_50ETF_OPTION)
+    # DNG.run(path_save=PATH_GAINS_DELTA_NEUTRAL_ChenRong2011)
 
     DNG=DeltaNeutralGains(path_option=PATH_50ETF_OPTION)
     DNG.run(path_save=PATH_GAINS_DELTA_NEUTRAL_ChenRong2011)

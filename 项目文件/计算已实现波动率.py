@@ -22,7 +22,7 @@ def RV(path_save=False):
     RV_s = []
     for date in data[C.TradingDate].unique():
         data_date = data[data[C.TradingDate] == date].dropna()
-        RV_s.append([date, np.sqrt(sum(data_date['r'] ** 2))])
+        RV_s.append([date, np.sqrt(sum(data_date['r'] ** 2))*10])
     RV_s = pd.DataFrame(RV_s, columns=[C.TradingDate, 'RV'])
 
     if path_save:

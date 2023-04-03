@@ -78,6 +78,7 @@ def surface_3D(data,x_label=None,y_label=None,z_label=None,save_path=None,title=
 
 
     plt.title(title,fontsize=25)
+    plt.show()
 
     if save_path is not None:
         plt.savefig(save_path)

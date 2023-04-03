@@ -29,7 +29,7 @@ def implied_vol_of_vol(path_surface_series:str,#隐含波动率曲面时间序�
             IV_mean=IV_date.sum()/lags
             vol_of_vol=(np.sqrt(((IV_date-IV_mean)**2).sum()/lags)/IV_mean).tolist()
             vol_of_vol_s[date]=vol_of_vol
-            print(f'计算Q_VV已经完成{date_s.index(date)/len(date_s)}')
+            print(f'计算moneyness为{moneyness}Q_VV已经完成{date_s.index(date)/len(date_s)}')
         except:
             continue
 
@@ -38,9 +38,22 @@ def implied_vol_of_vol(path_surface_series:str,#隐含波动率曲面时间序�
     if path_save:
         vol_of_vol_s.to_csv(path_save,encoding='utf_8_sig')
 
+    return vol_of_vol_s
 
 
 
+#在各个在值程度和剩余到期时间上计算隐含VV：
+def vol_of_vol_moneyness(path_save=False):
+    VV_s=[]
+    for KF in MONEYNESS_KF:
+        VV=implied_vol_of_vol(PATH_IV_SURFACE_SERIES,moneyness=KF)
+        VV_s.append(VV)
+    VV_s=pd.concat(VV_s,keys=MONEYNESS_KF)
+    VV_s.index.names=[C.KF,C.TradingDate]
+    VV_s.columns=WINDOWS_DAYS_NATURAL
+    VV_s.reset_index(inplace=True)
+    if path_save:
+        VV_s.to_csv(PATH_Q_VV_Moneyness,encoding='utf_8_sig',index=False)
 
 
 
@@ -52,9 +65,12 @@ def implied_vol_of_vol(path_surface_series:str,#隐含波动率曲面时间序�
 
 
 if __name__=='__main__':
+
     path_surface_series=data_real_path('数据文件/生成数据/隐含波动率曲面时间序列.csv')
     path_save=data_real_path('数据文件/生成数据')+'/隐含vol_of_vol.csv'
     implied_vol_of_vol(path_surface_series)
+
+    vol_of_vol_moneyness()
 
 
 

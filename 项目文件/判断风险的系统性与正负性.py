@@ -11,27 +11,14 @@ import statsmodels.api as sm
 
 
 #检验两个时间序列之间的相关性
-#参考陈蓉(2019)和冯志新(2013)，检验VV收益率与市场收益率的相关性
-def corr(X,Y):
-    option = pd.read_csv(PATH_50ETF_OPTION)
-    under = option[['TradingDate', 'UnderlyingScrtClose']].drop_duplicates().sort_values('TradingDate')
-    under['r_Underlying'] = np.log(under['UnderlyingScrtClose'] / under['UnderlyingScrtClose'].shift())
-
-    Q_VV = pd.read_csv(PATH_Q_VV)
-    P_VV = pd.read_csv(PATH_P_VV)
-
-    under
-
-
-
-
-
-def COV_between_QVV_and_M():
-    option=pd.read_csv(PATH_50ETF_OPTION)
+#参考陈蓉(2019)和冯志新(2013)，检验V和VV收益率与市场收益率的相关性
+def COV_between_QVV_and_M(
+        option,path_save=False
+):
     under=option[['TradingDate','UnderlyingScrtClose']].drop_duplicates().sort_values('TradingDate')
     under['r_Underlying']=np.log(under['UnderlyingScrtClose']/under['UnderlyingScrtClose'].shift())
 
-    RV=pd.read_csv(PATH_RV).rename(columns={'trade_date':'TradingDate'})
+    RV=pd.read_csv(PATH_RV)
 
     Q_VV=pd.read_csv(PATH_Q_VV)
     P_VV = pd.read_csv(PATH_P_VV)
@@ -59,16 +46,11 @@ def COV_between_QVV_and_M():
 
         corr_s.append([col_VV,r,t])
 
+    corr_s=pd.DataFrame(corr_s,columns=['risk','corr','t'])
+    if path_save:
+        corr_s.to_csv(PATH_RISK_SYSMETRIC,encoding='utf_8_sig',index=False)
 
-
-
-
-    under
-    corr_s
-
-
-
-
+    return corr_s
 
 
 
@@ -77,12 +59,26 @@ def COV_between_QVV_and_M():
 
 
 
-    pass
+
+
+
+
+
 
 
 
 if __name__=='__main__':
-    COV_between_QVV_and_M()
+    #2015年2月9日——2016年7月8日
+    option = pd.read_csv(PATH_50ETF_OPTION)
+    option=option[(option[C.TradingDate]>='2015-02-09')&(option[C.TradingDate]<='2016-07-08')]
+    corr_s = COV_between_QVV_and_M(option=option)
+
+
+    #全范围样本
+    option = pd.read_csv(PATH_50ETF_OPTION)
+    corr_s=COV_between_QVV_and_M(option=option,path_save=PATH_RISK_SYSMETRIC)
+
+    corr_s
 
 
 
