@@ -20,7 +20,7 @@ def construct_volatility_surface(
 
     ):
 
-    dates=data['TradingDate'].unique()
+    dates=data['TradingDate'].unique()#删去重复数据，由小到大排列
 
     # 按照  ln(IV)=b1+b2*K/F+b3*(K/F)^2+b4*years+b5*(years*K/F)
     #参考陈蓉（2010）
@@ -32,7 +32,7 @@ def construct_volatility_surface(
 
     #拟合隐含波动率曲面模型
     models={}
-    for date in dates:
+    for date in dates:#每个交易日拟合一条曲线
         data_date=data[data['TradingDate']==date]
         X = data_date[['K/F', '(K/F)^2', 'years', 'years*(K/F)']]  # 解释变量
         X=sm.add_constant(X)
@@ -46,12 +46,12 @@ def construct_volatility_surface(
     #建立隐含波动率曲面时间序列
 
     #将底部格点恢复成并列结构
-    grids=[[x,y] for x in grids[0] for y in WINDOWS_YEARS]
-    volatility_surface=pd.DataFrame(grids,columns=['K/F','years'])
+    grids=[[x,y] for x in grids[0] for y in WINDOWS_YEARS]#
+    volatility_surface=pd.DataFrame(grids,columns=['K/F','years'])#波动率期限结构（在值程度和到期时间）
     volatility_surface['(K/F)^2'] = volatility_surface['K/F'] ** 2
     volatility_surface['years*(K/F)'] = volatility_surface['years'] * volatility_surface['K/F']
 
-    volatility_surface_series=[]
+    volatility_surface_series=[]#创建一个空列表
     for key in models.keys():
         volatility_surface_=copy.deepcopy(volatility_surface)
         volatility_surface_['ln(IV)']=models[key].predict(sm.add_constant(volatility_surface[['K/F', '(K/F)^2', 'years', 'years*(K/F)']]))
@@ -59,7 +59,7 @@ def construct_volatility_surface(
         volatility_surface_[C.TradingDate]=key
 
         volatility_surface_series.append(volatility_surface_)
-    volatility_surface_series=pd.concat(volatility_surface_series,axis=0)
+    volatility_surface_series=pd.concat(volatility_surface_series,axis=0)#？
 
     if path_save:
         volatility_surface_series.to_csv(path_save,encoding='utf_8_sig',index=False)

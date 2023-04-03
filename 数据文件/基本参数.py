@@ -6,9 +6,8 @@ PATH_PARAMETERS=data_real_path('数据文件/原始数据/个股期权合约定�
 PATH_BASIC=data_real_path('数据文件/原始数据/个股期权合约日交易基础表20230328/SO_QuotationBas.csv')
 PATH_DERIVE=data_real_path('数据文件/原始数据/个股期权合约日交易衍生表20230328/SO_QuotationDer.csv')
 
-PATH_50ETF_5MIN=data_real_path('数据文件/原始数据/50ETF五分钟收盘价.csv')
-PATH_50ETF_1MIN=data_real_path('数据文件/原始数据/50ETF一分钟收盘价.csv')
-PATH_50ETF_FUTURE=data_real_path('数据文件/原始数据/股指期货日交易数据225129281/FFUT_FDT.csv')
+PATH_50ETF_5MIN=data_real_path('数据文件/原始数据/股指期货日交易数据225129281/50ETF五分钟收盘价.csv')
+PATH_50ETF_1MIN=data_real_path('数据文件/原始数据/股指期货日交易数据225129281/50ETF一分钟收盘价.csv')
 PATH_50ETF=data_real_path('数据文件/原始数据/50ETF日度收盘价.csv')
 
 #生成数据路径
