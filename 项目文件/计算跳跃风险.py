@@ -15,6 +15,7 @@ from 数据文件.基本参数 import *
 def Jump_Risk():
     IV=pd.read_csv(PATH_IV_SURFACE_SERIES)
     IV=pd.pivot_table(IV,index=[C.TradingDate],columns=[C.KF],values=['IV'])['IV']
+    IV=IV[IV.columns[(IV.columns>=0.95)&(IV.columns<=1.05)]]
 
     Jump=pd.DataFrame(IV.values-IV[IV.columns[2]].values.reshape(-1,1),index=IV.index,columns=IV.columns)
     #深度虚值看跌跳跃、虚值看跌跳跃、平值看跌跳跃、实值看涨跳跃、深度实值看涨跳跃

@@ -17,7 +17,7 @@ PATH_IV_SURFACE_SERIES=data_real_path('数据文件/生成数据') + '/隐含波
 PATH_RV=data_real_path('数据文件/生成数据') + '/已实现波动率.csv'
 PATH_Q_VV=data_real_path('数据文件/生成数据') + '/隐含vol_of_vol.csv'
 PATH_P_VV=data_real_path('数据文件/生成数据') + '/已实现vol_of_vol.csv'
-
+PATH_Q_VV_Moneyness=data_real_path('数据文件/生成数据') + '/不同在值程度上的隐含vol_of_vol.csv'
 
 
 #交易日窗口长度，基于中国期权上证50ETF
@@ -78,16 +78,24 @@ class Columns():
     KF_bin='K/F_bin'
     KF_minus_1 = 'K/F-1'
     KF_minus_1_bin = 'K/F-1_bin'
+    FutureClose='FutureClose'#期货收盘价
+    FutureExpiration='FutureExpiration'#期货到期日期
+    FutureDelta='FutureDelta'
+    FutureRemainingTerm='FutureRemainingTerm'#期货距离到期日剩余年数
+    ExpirationMonth='ExpirationMonth'#到期月份
+    OptionExpirationMonth='OptionExpirationMonth'#期权到期月份
 
 
 C= Columns()
 
 #建立隐含波动率曲面时间序列
-MONEYNESS_KF=[0.95,0.97,1,1.03,1.05]#在值程度，用于建立隐含波动率曲面底盘，参考陈蓉（2010）《隐含波动率曲面_建模与实证_陈蓉》
+MONEYNESS_KF=[0.93,0.95,0.97,1,1.03,1.05,1.07]#在值程度，用于建立隐含波动率曲面底盘，参考陈蓉（2010）《隐含波动率曲面_建模与实证_陈蓉》
 
 #计算期权的delta中性收益
 COL_GAINS=[C.Gains,C.Gains_to_option,C.Gains_to_underlying]#期权收益类型
 
+#判断VV风险的系统性与正负性
+PATH_RISK_SYSMETRIC=data_real_path('数据文件/生成数据') + '/风险的系统性与正负性.csv'
 
 #拟合delta中性收益与风险的时间序列关系
 COL_IV=[f'IV{x}' for x in WINDOWS_DAYS_NATURAL]
@@ -96,7 +104,7 @@ PATH_GAINS_OLS_RV_and_QVV=data_real_path('数据文件/生成数据') + '/GAINS_
 PATH_GAINS_OLS_IV_and_QVV=data_real_path('数据文件/生成数据') + '/GAINS_OLS_IV_and_QVV回归结果.csv'
 PATH_Moneyness_GAINS_OLS_IV_and_QVV=data_real_path('数据文件/生成数据') + '/基于不同在值程度的GAINS_OLS_IV_and_QVV回归结果.csv'
 MONEYNESS_BIN=pd.IntervalIndex.from_tuples([(-0.03, 0.03), (0.03, 0.1), (-0.1, -0.03)])
-
+PATH_GAINS_OLS_IV_and_QVV_YEARS=data_real_path('数据文件/生成数据') + '/GAINS_OLS_IV_and_QVV_YEARS回归结果.csv'
 
 
 
@@ -106,3 +114,13 @@ PATH_JUMP=data_real_path('数据文件/生成数据') + '/跳跃风险时间序�
 #深度虚值看跌跳跃、虚值看跌跳跃、平值看跌跳跃、实值看涨跳跃、深度实值看涨跳跃
 COL_JUMP=['JDOP','JOP','JA','JOC','JDOC']#
 PATH_GAINS_OLS_IV_and_QVV_JUMP=data_real_path('数据文件/生成数据') + '/GAINS_OLS_IV_and_QVV_JUMP回归结果.csv'
+
+
+#绘图
+PATH_IV_SURFACE_3D= data_real_path('数据文件/生成数据') + '/隐含波动率曲面3D图.png'
+PATH_QVV_SURFACE_3D= data_real_path('数据文件/生成数据') + '/QVV曲面3D图.png'
+
+
+
+
+

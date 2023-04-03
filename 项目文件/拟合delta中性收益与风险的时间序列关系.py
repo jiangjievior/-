@@ -9,7 +9,7 @@ import numpy as np
 import os
 
 
-#使用面板数据拟合delta中性收益与 波动率 VV 之间的关系
+#使用面板数据拟合delta中性收益与 波动率^2 VV^2 之间的关系
 #参考《Volatility-of-Volatility Risk Darien》的(28)
 class SeriesOlsGainsAndRisk():
 
@@ -26,35 +26,48 @@ class SeriesOlsGainsAndRisk():
 
         self.def_col()
         self.combine_data()
-        #self.construct_panel()
 
-        # 将波动率变为方差
-        self.gains.loc[:,'RV':]=self.gains.loc[:,'RV':]**2
+        # 剔除实值期权
+        self.gains = self.gains[self.gains[C.Delta].abs() <= 0.5]
 
+        #建立日度均值时间序列
+        self.gains_pivot = pd.pivot_table(self.gains, index=[self.col_TradingDate],
+                                          values=[self.col_Gains, C.Gains_to_underlying,
+                                                  C.Gains_to_option,C.RV] + COL_IV + COL_QVV)
+        self.gains_pivot.dropna(inplace=True)
 
     #将收益与波动率数据合并
     def combine_data(self):
+        #添加已实现波动率数据
+        self.RV[C.RV]=self.RV[C.RV]**2
         self.gains = pd.merge(self.gains, self.RV, on=[self.col_TradingDate])
+
+        #添加QVV数据
         self.Q_VV.columns = [self.col_TradingDate] + COL_QVV
+        self.Q_VV[COL_QVV]=self.Q_VV[COL_QVV]**2
         self.gains = pd.merge(self.gains, self.Q_VV, on=[self.col_TradingDate])
 
-        #将平值期权添加进数据
+        #将平值期权IV添加进数据
         self.At_IV=pd.pivot_table(self.IV[self.IV[C.KF]==1],index=[C.TradingDate],columns=['years'],values=['IV'])['IV']
         self.At_IV.columns=COL_IV
+        self.At_IV[COL_IV]=self.At_IV[COL_IV]**2
         self.At_IV.reset_index(inplace=True)
         self.gains=pd.merge(self.gains,self.At_IV,on=[C.TradingDate])
 
 
 
 
-    #普通OLS回归:用 gains/S = IV + QVV + gains/S(-1) 在时间序列上回归
+    #普通OLS回归:用 gains/S = IV^2 + QVV^2 + gains/S(-1) 在时间序列上回归
     #gains/S 是一个单条时间序列，每个时间点上的值为所有moneyness对应的均值
     def run_1(self):
 
-        #剔除实值期权
-        self.gains=self.gains[self.gains[C.Delta].abs()<=0.5]
+        # #剔除实值期权
+        # self.gains=self.gains[self.gains[C.Delta].abs()<=0.5]
+        # self.gains_pivot=pd.pivot_table(self.gains,index=[self.col_TradingDate],values=[self.col_Gains,C.Gains_to_underlying,C.Gains_to_option]+COL_IV+COL_QVV)
+        # self.gains_pivot.dropna(inplace=True)
 
-        self.gains_pivot=pd.pivot_table(self.gains,index=[self.col_TradingDate],values=[self.col_Gains,C.Gains_to_underlying,C.Gains_to_option]+COL_IV+COL_QVV)
+
+        #self.gains_pivot=self.gains_pivot.loc[self.gains_pivot.index<='2017-01-01',:]
 
         results=[]
         for col_gain in COL_GAINS:
@@ -72,18 +85,19 @@ class SeriesOlsGainsAndRisk():
                              )
 
 
+
         results.to_csv(PATH_GAINS_OLS_IV_and_QVV,encoding='utf_8_sig',index=False)
 
         return results
 
-    #普通OLS回归:用 gains/S = RV + QVV + gains/S(-1) 在时间序列上回归
+    #普通OLS回归:用 gains/S = RV^2 + QVV^2 + gains/S(-1) 在时间序列上回归
     #gains/S 是一个单条时间序列，每个时间点上的值为所有moneyness对应的均值
     def run_2(self):
 
-        #剔除实值期权
-        self.gains=self.gains[self.gains[C.Delta].abs()<=0.5]
-
-        self.gains_pivot=pd.pivot_table(self.gains,index=[self.col_TradingDate],values=[self.col_Gains,C.Gains_to_underlying,C.Gains_to_option,'RV']+COL_QVV)
+        # #剔除实值期权
+        # self.gains=self.gains[self.gains[C.Delta].abs()<=0.5]
+        # self.gains_pivot=pd.pivot_table(self.gains,index=[self.col_TradingDate],values=[self.col_Gains,C.Gains_to_underlying,C.Gains_to_option,'RV']+COL_QVV)
+        # self.gains_pivot.dropna(inplace=True)
 
         results = []
         for col_gain in COL_GAINS:
@@ -106,24 +120,25 @@ class SeriesOlsGainsAndRisk():
         return results
 
 
-
-
-    # 普通OLS回归:用 gains/S = IV + QVV + gains/S(-1) 在时间序列上回归
+    # 普通OLS回归:用 gains/S = IV^2 + QVV^2 + gains/S(-1) 在时间序列上回归
     # gains/S 是多条时间序列，按照moneyness(K/F)分别在每种moneyness上进行回归
+    #已经证实：分Moneyness并不显著
     def run_3(self):
 
-        # 剔除实值期权
-        self.gains = self.gains[self.gains[C.Delta].abs() <= 0.5]
+        # # 剔除实值期权
+        # self.gains = self.gains[self.gains[C.Delta].abs() <= 0.5]
 
-        self.gains[C.KF].describe()
+        #计算在值程度
         self.gains[C.KF_minus_1] = self.gains[C.KF] - 1
         self.gains[C.KF_minus_1_bin] = self.gains[C.CallOrPut] + (
             pd.cut(self.gains[C.KF_minus_1], bins=MONEYNESS_BIN)).astype(str)
+
 
         results = []
         for col_gain in COL_GAINS:
             gains_pivot = pd.pivot_table(self.gains, index=[C.TradingDate], columns=[C.KF_minus_1_bin],
                                          values=[col_gain])[col_gain]
+            #gains_pivot.dropna(inplace=True)
             col_panel_Gains = ['C(-0.03, 0.03]', 'C(0.03, 0.1]', 'P(-0.03, 0.03]', 'P(-0.1, -0.03]']
             gains_pivot = gains_pivot[col_panel_Gains]
             gains_pivot = pd.merge(gains_pivot, self.RV, on=[C.TradingDate])
@@ -133,15 +148,19 @@ class SeriesOlsGainsAndRisk():
 
             # 添加收益的滞后项
             col_panel_Gains_lag = [f'{x}(-1)' for x in col_panel_Gains]
-            gains_pivot[col_panel_Gains_lag] = gains_pivot[col_panel_Gains].shift().fillna(method='bfill')
+            gains_pivot[col_panel_Gains_lag] = gains_pivot[col_panel_Gains].shift()#.fillna(method='bfill')
             # gains_pivot.fillna(method='bfill',inplace=True)
-            gains_pivot.dropna(inplace=True)
+            #gains_pivot.dropna(inplace=True)
 
 
             for i in range(len(COL_IV)):
                 for j in range(len(col_panel_Gains)):
                     X = gains_pivot[[COL_IV[i], COL_QVV[i], col_panel_Gains_lag[j]]]
                     Y = gains_pivot[col_panel_Gains[j]]
+
+                    #剔除数据Nan值，并保持一致
+                    Y.dropna(inplace=True)
+                    X=X.loc[Y.index,:]
 
                     model, params, tvalues, pvalues, resid, F, p_F, R_2 = OLS_model(X, Y)
 
@@ -153,20 +172,20 @@ class SeriesOlsGainsAndRisk():
 
         results.to_csv(PATH_Moneyness_GAINS_OLS_IV_and_QVV,encoding='utf_8_sig',index=False)
 
-    # 普通OLS回归:用 gains/S = IV + QVV+JUMP + gains/S(-1) 在时间序列上回归
+    # 普通OLS回归:用 gains/S = IV^2 + QVV^2+JUMP + gains/S(-1) 在时间序列上回归
     # gains/S 是一个单条时间序列，每个时间点上的值为所有moneyness对应的均值
     def run_4(self):
 
-        # 剔除实值期权
-        self.gains = self.gains[self.gains[C.Delta].abs() <= 0.5]
-
-        self.gains_pivot = pd.pivot_table(self.gains, index=[self.col_TradingDate],
-                                          values=[self.col_Gains, C.Gains_to_underlying,
-                                                  C.Gains_to_option] + COL_IV + COL_QVV)
+        # # 剔除实值期权
+        # self.gains = self.gains[self.gains[C.Delta].abs() <= 0.5]
+        # self.gains_pivot = pd.pivot_table(self.gains, index=[self.col_TradingDate],
+        #                                   values=[self.col_Gains, C.Gains_to_underlying,
+        #                                           C.Gains_to_option] + COL_IV + COL_QVV)
 
         # 添加JUMP风险
         JUMP = pd.read_csv(PATH_JUMP,index_col=0)
         self.gains_pivot[COL_JUMP]=JUMP
+        self.gains_pivot.dropna(inplace=True)
 
         results = []
         for col_gain in COL_GAINS:
@@ -189,7 +208,7 @@ class SeriesOlsGainsAndRisk():
 
         return results
 
-    #面板OLS回归:用 gains/S = IV + PVV + gains/S(-1) 在时间序列上回归
+    #面板OLS回归:用 gains/S = IV^2 + PVV^2 + gains/S(-1) 在时间序列上回归
     #gains/S 是多条时间序列，按照moneyness(K/F)进行分类
     def run_5(self):
 
@@ -237,57 +256,37 @@ class SeriesOlsGainsAndRisk():
 
         model, params, tvalues, pvalues, resid, F, p_F, R_2 = OLS_model(X, Y)
 
+    #已经证实,回归不显著
+    # 普通OLS回归:用 gains/S = IV^2 + QVV^2 + gains/S(-1) 在时间序列上回归
+    # gains/S 是一个单条时间序列，在每个交易年份内进行回归
+    def run_6(self):
 
+        #self.gains_pivot = self.gains_pivot.loc[self.gains_pivot.index >= '2018-01-01', :]
 
+        years=self.gains_pivot.index.astype(str).str[:4].unique()
+        self.gains_pivot['year']=self.gains_pivot.index.astype(str).str[:4]
 
+        results = []
+        for year in years:
+            gains_pivot_year=self.gains_pivot[self.gains_pivot['year']==year]
+            for col_gain in COL_GAINS:
+                for i in range(len(COL_QVV)):
+                    X = gains_pivot_year[[COL_IV[i], COL_QVV[i]]]
+                    X['gains_lag1'] = gains_pivot_year[col_gain].shift().fillna(method='bfill')
+                    Y = gains_pivot_year[col_gain]
 
+                    model, params, tvalues, pvalues, resid, F, p_F, R_2 = OLS_model(X, Y)
 
+                    results.append([year,col_gain, COL_QVV[i]] + params + tvalues + pvalues + [R_2])
+        col_params = ['const', 'IV', 'QVV', 'gains(-1)']
+        results = pd.DataFrame(results,
+                               columns=['year','type_gain', 'type_QVV'] + col_params + [f't{x}' for x in col_params] + [
+                                   f'p{x}' for x in col_params] + ['R']
+                               )
 
-        #进行面班回归
-        import statsmodels.api as sm  # 回归
-        import statsmodels.formula.api as smf  # 回归
-        from linearmodels.panel import PanelOLS  # 面板回归
-
-        col_indvidual = C.KF_minus_1_bin  # 个体轴名称
-        col_date = C.TradingDate  # 时间轴名称
-
-        # 指定自变量和因变量列标题
-        col_X = [COL_QVV[1],COL_IV[1]]+['Gains(-1)']
-        col_Y = C.Gains
-
-        # 面板回归之前，需要先设置“个股在外时间在内”的层次化索引
-        Panel.set_index([col_indvidual, col_date], inplace=True)
-
-        # 指定自变量和因变量
-        X = sm.add_constant(Panel[col_X])
-        Y = Panel[col_Y]
-
-        # 混合回归
-        model_pooled = PanelOLS(Y, X, entity_effects=True, time_effects=False)
-        model_pooled = model_pooled.fit()
-        print(model_pooled)
-
-        self.gains_pivot=pd.pivot_table(self.gains,index=[self.col_TradingDate],values=[self.col_Gains,C.Gains_to_underlying,C.Gains_to_option]+COL_IV+COL_QVV)
-
-        results=[]
-        for i in range(len(COL_QVV)):
-            X=self.gains_pivot[[COL_IV[i],COL_QVV[i]]]
-            X['gains_lag1']=self.gains_pivot[C.Gains_to_underlying].shift().fillna(method='bfill')
-            Y=self.gains_pivot[C.Gains]
-
-            model, params, tvalues, pvalues, resid, F, p_F, R_2 = OLS_model(X, Y)
-
-            results.append([COL_QVV[i]]+params+tvalues+pvalues+[R_2])
-        col_params=['const','IV','QVV','gains(-1)']
-        results=pd.DataFrame(results,
-                             columns=['QVV']+col_params+[f't{x}' for x in col_params]+[f'p{x}' for x in col_params]+['R']
-                             )
-
-
-        results.to_csv(PATH_GAINS_OLS_IV_and_QVV,encoding='utf_8_sig',index=False)
+        results.to_csv(PATH_GAINS_OLS_IV_and_QVV_YEARS, encoding='utf_8_sig', index=False)
 
         return results
-
 
     #创建面板数据
     def construct_panel(self,
