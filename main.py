@@ -53,7 +53,7 @@ vol_of_vol_moneyness(path_save=PATH_Q_VV_Moneyness)#计算基于不同在值程�
 
 #4.绘制隐含VV曲面3D图
 VV=pd.read_csv(PATH_Q_VV_Moneyness)
-VV=pd.pivot_table(VV,index=[C.KF],values=[str(x) for x in WINDOWS_DAYS_NATURAL])[[str(x) for x in WINDOWS_DAYS_NATURAL]]
+VV=pd.pivot_table(VV,index=[C.KF],values=[x for x in WINDOWS_DAYS_NATURAL])[[x for x in WINDOWS_DAYS_NATURAL]]
 VV.columns=VV.columns.astype(int)
 plot_3D_surface(data = VV.T,
                 x_label = 'Maturity(days)',
