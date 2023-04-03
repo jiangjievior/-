@@ -23,15 +23,15 @@ PATH_Q_VV_Moneyness=data_real_path('数据文件/生成数据') + '/不同在值
 #交易日窗口长度，基于中国期权上证50ETF
 DAYS_OF_YEAR=242#一年中交易日个数，参考陈蓉（2019）《波动率风险和波动率风险溢酬_中国的独特现象》 脚注9
 DAYS_OF_MONTH=20#一个月中交易日个数，参考陈蓉（2019）《波动率风险和波动率风险溢酬_中国的独特现象》 脚注9
-WINDOWS_MONTH=[1,2,3,6,12]#常需考察的期权剩余到期月数，参考 Carr and Wu(2020)《Option Profit and Loss Attribution and Pricing: A New Framework》 P2286
-WINDOWS_DAYS=[x*DAYS_OF_MONTH for x in WINDOWS_MONTH]#常需考察的期权剩余到期天数
+WINDOWS_MONTH=[1/3,1/2,2/3,1,2,3,6,12]#常需考察的期权剩余到期月数，参考 Carr and Wu(2020)《Option Profit and Loss Attribution and Pricing: A New Framework》 P2286
+WINDOWS_DAYS=[int(x*DAYS_OF_MONTH) for x in WINDOWS_MONTH]#常需考察的期权剩余到期天数
 WINDOWS_YEARS=[X/DAYS_OF_YEAR for X in WINDOWS_DAYS]#常需考察的期权剩余到期年数
 
 
 #自然日窗口长度
 DAYS_OF_YEAR_NATURAL=365#一年中自然日个数
 DAYS_OF_MONTH_NATURAL=30#一个月中自然日个数
-WINDOWS_MONTH=[1,2,3,6,12]#常需考察的期权剩余到期月数，参考 Carr and Wu(2020)《Option Profit and Loss Attribution and Pricing: A New Framework》 P2286
+
 WINDOWS_DAYS_NATURAL=[x*DAYS_OF_MONTH_NATURAL for x in WINDOWS_MONTH]#常需考察的期权剩余到期天数
 WINDOWS_YEARS_NATURAL=[X/DAYS_OF_YEAR_NATURAL for X in WINDOWS_DAYS_NATURAL]#常需考察的期权剩余到期年数
 
