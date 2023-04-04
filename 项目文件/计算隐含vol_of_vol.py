@@ -28,13 +28,13 @@ def implied_vol_of_vol(path_surface_series:str,#隐含波动率曲面时间序�
             IV_date=surface_series.loc[date_s[date_s.index(date)-lags]:date,:]#根据索引获取某一data二十天前的索引对应的date到当日date的数据
             IV_mean=IV_date.sum()/lags#过去20天IV平方和除以20
             vol_of_vol=(np.sqrt(((IV_date-IV_mean)**2).sum()/lags)/IV_mean).tolist()#计算vov的公式，将vov转化为列表
-            vol_of_vol_s[date]=vol_of_vol
+            vol_of_vol_s[date]=vol_of_vol#方便看出是哪个交易日的vov
             print(f'计算moneyness为{moneyness}Q_VV已经完成{date_s.index(date)/len(date_s)}')#qvv计算
         except:
             continue
 
-    vol_of_vol_s=pd.DataFrame(vol_of_vol_s,index=surface_series.columns).T
-    vol_of_vol_s.index.name=C.TradingDate
+    vol_of_vol_s=pd.DataFrame(vol_of_vol_s,index=surface_series.columns).T#与波动率曲面时间序列数据相同的列标签，建立VV曲面时间序列
+    vol_of_vol_s.index.name=C.TradingDate#索引设置为交易日
     if path_save:
         vol_of_vol_s.to_csv(path_save,encoding='utf_8_sig')
 
@@ -46,10 +46,10 @@ def implied_vol_of_vol(path_surface_series:str,#隐含波动率曲面时间序�
 def vol_of_vol_moneyness(path_save=False):
     VV_s=[]
     for KF in MONEYNESS_KF:
-        VV=implied_vol_of_vol(PATH_IV_SURFACE_SERIES,moneyness=KF)
-        VV_s.append(VV)
-    VV_s=pd.concat(VV_s,keys=MONEYNESS_KF)
-    VV_s.index.names=[C.KF,C.TradingDate]
+        VV=implied_vol_of_vol(PATH_IV_SURFACE_SERIES,moneyness=KF)#不同在值程度下计算IVV
+        VV_s.append(VV)#算一个在值程度，在VV_s后加一列
+    VV_s=pd.concat(VV_s,keys=MONEYNESS_KF)#keys合并后保留KF的信息
+    VV_s.index.names=[C.KF,C.TradingDate]#在值程度和交易日期作为索引（合并后保留在值程度的信息）
     VV_s.columns=WINDOWS_DAYS_NATURAL
     VV_s.reset_index(inplace=True)
     if path_save:
@@ -70,7 +70,7 @@ if __name__=='__main__':
     path_save=data_real_path('数据文件/生成数据')+'/隐含vol_of_vol.csv'
     implied_vol_of_vol(path_surface_series)
 
-    vol_of_vol_moneyness()
+    vol_of_vol_moneyness(path_save=PATH_Q_VV_Moneyness)
 
 
 
