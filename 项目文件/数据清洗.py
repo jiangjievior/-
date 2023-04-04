@@ -97,7 +97,7 @@ def clean_data(data,
 
 if __name__=='__main__':
     data=get_data()
-    data=clean_data(data)
+    data=clean_data(data,path_save=PATH_50ETF_OPTION)
 
 
 
