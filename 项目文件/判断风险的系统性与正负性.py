@@ -15,6 +15,7 @@ import statsmodels.api as sm
 def COV_between_QVV_and_M(
         option,path_save=False
 ):
+    option=pd.read_csv(PATH_50ETF_OPTION)
     under=option[['TradingDate','UnderlyingScrtClose']].drop_duplicates().sort_values('TradingDate')
     under['r_Underlying']=np.log(under['UnderlyingScrtClose']/under['UnderlyingScrtClose'].shift())
 

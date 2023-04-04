@@ -61,30 +61,25 @@ class SeriesOlsGainsAndRisk():
     #gains/S 是一个单条时间序列，每个时间点上的值为所有moneyness对应的均值
     def run_1(self):
 
-        # #剔除实值期权
-        # self.gains=self.gains[self.gains[C.Delta].abs()<=0.5]
-        # self.gains_pivot=pd.pivot_table(self.gains,index=[self.col_TradingDate],values=[self.col_Gains,C.Gains_to_underlying,C.Gains_to_option]+COL_IV+COL_QVV)
-        # self.gains_pivot.dropna(inplace=True)
-
-
         #self.gains_pivot=self.gains_pivot.loc[self.gains_pivot.index<='2017-01-01',:]
 
         results=[]
-        for col_gain in COL_GAINS:
-            for i in range(len(COL_QVV)):
-                X=self.gains_pivot[[COL_IV[i],COL_QVV[i]]]
-                X[C.Gains_lag1]=self.gains_pivot[col_gain].shift().fillna(method='bfill')
-                Y=self.gains_pivot[col_gain]
+
+        for col_X in (['QVV'],['IV'],['QVV','IV']):
+            result=[]
+
+            for days in WINDOWS_DAYS_NATURAL:
+                X = self.gains_pivot[[f'{x}{days}' for x in col_X]]
+                X[C.Gains_lag1] = self.gains_pivot[C.Gains_to_underlying].shift().fillna(method='bfill')
+                Y = self.gains_pivot[C.Gains_to_underlying]
 
                 model, params, tvalues, pvalues, resid, F, p_F, R_2 = OLS_model(X, Y)
 
-                results.append([col_gain,COL_QVV[i]]+params+tvalues+pvalues+[R_2])
-        col_params=['const','IV','QVV','gains(-1)']
-        results=pd.DataFrame(results,
-                             columns=['type_gain','type_QVV']+col_params+[f't{x}' for x in col_params]+[f'p{x}' for x in col_params]+['R']
-                             )
-
-
+                result.append([C.Gains_to_underlying]+[days] + params + tvalues + pvalues + [R_2])
+            col_X=['const']+col_X+[C.Gains_lag1]
+            result=pd.DataFrame(result,columns=['type_gain','Maturity']+col_X+[f't{x}' for x in col_X]+[f'p{x}' for x in col_X]+['R'])
+            results.append(result)
+        results=pd.concat(results,axis=0)
 
         results.to_csv(PATH_GAINS_OLS_IV_and_QVV,encoding='utf_8_sig',index=False)
 
@@ -94,28 +89,26 @@ class SeriesOlsGainsAndRisk():
     #gains/S 是一个单条时间序列，每个时间点上的值为所有moneyness对应的均值
     def run_2(self):
 
-        # #剔除实值期权
-        # self.gains=self.gains[self.gains[C.Delta].abs()<=0.5]
-        # self.gains_pivot=pd.pivot_table(self.gains,index=[self.col_TradingDate],values=[self.col_Gains,C.Gains_to_underlying,C.Gains_to_option,'RV']+COL_QVV)
-        # self.gains_pivot.dropna(inplace=True)
+        #self.gains_pivot=self.gains_pivot.loc[self.gains_pivot.index<='2019-02-02',:]
 
-        #self.gains_pivot=self.gains_pivot.loc[self.gains_pivot.index>='2016-01-01',:]
+        results=[]
 
-        results = []
-        for col_gain in COL_GAINS:
-            for i in range(len(COL_QVV)):
-                X=self.gains_pivot[['RV',COL_QVV[i]]]
-                X['gains_lag1']=self.gains_pivot[col_gain].shift().fillna(method='bfill')
-                Y=self.gains_pivot[col_gain]
+        for col_X in (['QVV'],['RV'],['QVV','RV']):
+            result=[]
+
+            for days in WINDOWS_DAYS_NATURAL:
+                col_X_=[f'{x}{days}' if x=='QVV' else x for x in col_X]
+                X = self.gains_pivot[col_X_]
+                X[C.Gains_lag1] = self.gains_pivot[C.Gains_to_underlying].shift().fillna(method='bfill')
+                Y = self.gains_pivot[C.Gains_to_underlying]
 
                 model, params, tvalues, pvalues, resid, F, p_F, R_2 = OLS_model(X, Y)
 
-                results.append([col_gain,COL_QVV[i]]+params+tvalues+pvalues+[R_2])
-        col_params=['const','RV','QVV','gains(-1)']
-        results=pd.DataFrame(results,
-                             columns=['type_gain','type_QVV']+col_params+[f't{x}' for x in col_params]+[f'p{x}' for x in col_params]+['R']
-                             )
-
+                result.append([C.Gains_to_underlying]+[days] + params + tvalues + pvalues + [R_2])
+            col_X=['const']+col_X+[C.Gains_lag1]
+            result=pd.DataFrame(result,columns=['type_gain','Maturity']+col_X+[f't{x}' for x in col_X]+[f'p{x}' for x in col_X]+['R'])
+            results.append(result)
+        results=pd.concat(results,axis=0)
 
         results.to_csv(PATH_GAINS_OLS_RV_and_QVV,encoding='utf_8_sig',index=False)
 
@@ -208,6 +201,47 @@ class SeriesOlsGainsAndRisk():
                                )
 
         results.to_csv(PATH_GAINS_OLS_IV_and_QVV_JUMP, encoding='utf_8_sig', index=False)
+
+        return results
+
+        # 普通OLS回归:用 gains/S = RV^2 + QVV^2+JUMP + gains/S(-1) 在时间序列上回归
+        # gains/S 是一个单条时间序列，每个时间点上的值为所有moneyness对应的均值
+
+    def run_7(self):
+
+        # # 剔除实值期权
+        # self.gains = self.gains[self.gains[C.Delta].abs() <= 0.5]
+        # self.gains_pivot = pd.pivot_table(self.gains, index=[self.col_TradingDate],
+        #                                   values=[self.col_Gains, C.Gains_to_underlying,
+        #                                           C.Gains_to_option] + COL_IV + COL_QVV)
+
+        # 添加JUMP风险
+        JUMP = pd.read_csv(PATH_JUMP, index_col=0)
+        self.gains_pivot[COL_JUMP] = JUMP
+        self.gains_pivot.dropna(inplace=True)
+
+        results = []
+        for col_gain in COL_GAINS:
+            for j in [0, 1, 3, 4]:
+                for i in range(len(COL_QVV)):
+                    X = self.gains_pivot[['RV', COL_QVV[i], COL_JUMP[j]]]
+                    # X = self.gains_pivot[['RV', COL_QVV[i], COL_JUMP[j]]]
+                    X['gains_lag1'] = self.gains_pivot[col_gain].shift().fillna(method='bfill')
+                    Y = self.gains_pivot[col_gain]
+
+                    model, params, tvalues, pvalues, resid, F, p_F, R_2 = OLS_model(X, Y)
+
+                    results.append([col_gain, COL_JUMP[j], COL_QVV[i]] + params + tvalues + pvalues + [R_2])
+        col_params = ['const', 'RV', 'QVV', 'JUMP', 'gains(-1)']
+        results = pd.DataFrame(results,
+                               columns=['type_gain', 'type_JUMP', 'type_QVV'] + col_params + [f't{x}' for x in
+                                                                                              col_params] + [f'p{x}' for
+                                                                                                             x in
+                                                                                                             col_params] + [
+                                           'R']
+                               )
+
+        results.to_csv(PATH_GAINS_OLS_RV_and_QVV_JUMP, encoding='utf_8_sig', index=False)
 
         return results
 
@@ -447,16 +481,21 @@ if __name__=='__main__':
     # # gains/S 是一个单条时间序列，每个时间点上的值为所有moneyness对应的均值
     # SOGAR=SeriesOlsGainsAndRisk()
     # SOGAR.run_2()
-    #
+
     # # 普通OLS回归:用 gains/S = IV + PVV + gains/S(-1) 在时间序列上回归
     # # gains/S 是多条时间序列，按照moneyness(K/F)分别在每种moneyness上进行回归
     # SOGAR=SeriesOlsGainsAndRisk()
     # SOGAR.run_3()
 
+    # # 普通OLS回归:用 gains/S = IV + PVV + gains/S(-1) 在时间序列上回归
+    # # gains/S 是多条时间序列，按照moneyness(K/F)分别在每种moneyness上进行回归
+    # SOGAR=SeriesOlsGainsAndRisk()
+    # SOGAR.run_4()
+
     # 普通OLS回归:用 gains/S = IV + PVV + gains/S(-1) 在时间序列上回归
     # gains/S 是多条时间序列，按照moneyness(K/F)分别在每种moneyness上进行回归
     SOGAR=SeriesOlsGainsAndRisk()
-    SOGAR.run_4()
+    SOGAR.run_7()
 
 
     pass

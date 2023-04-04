@@ -82,6 +82,12 @@ class DeltaNeutralGains():
         (self.option['next_Underlying']-self.option[self.col_UnderlyingScrtClose])-self.option[self.col_RisklessRate]/100* \
                              (self.option[self.col_ClosePrice]-self.option[self.col_Delta]*self.option[self.col_UnderlyingScrtClose])*self.tao
 
+        #test
+        gains=self.option[[C.TradingDate, C.ShortName, C.Delta, C.CallOrPut, C.Gains,C.UnderlyingScrtClose]].dropna()
+        pd.pivot_table(gains,index=[C.CallOrPut],values=['gains'])
+        np.corrcoef(gains['gains'],gains[C.UnderlyingScrtClose])
+
+
         #计算gains/S
         self.option[C.Gains_to_underlying]=self.option[C.Gains]/self.option[C.UnderlyingScrtClose]
         # 计算gains/期权价格
@@ -113,7 +119,7 @@ class DeltaNeutralGains2():
     # 按照陈蓉(2011)的方法筛选样本
     def filter(self):
         # 剔除交易日高于60天的期权样本
-        self.option = self.option[self.option[self.col_RemainingTerm] <= 60 / 365]
+        self.option = self.option[self.option[self.col_RemainingTerm] <= 30 / 365]
         # #剔除实值期权
         # self.option=self.option[self.option[self.col_Delta].abs()<=0.5]
 
