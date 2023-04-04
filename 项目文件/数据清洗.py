@@ -32,9 +32,6 @@ def get_data():
     data=data.loc[set(data.index)-set(data_drop['index']),:]#删掉每一份合约最后一个交易日的数据
     data=data.drop('index',axis=1) #删除索引
 
-    #增加期货交易价格数据
-    future=pd.read_csv(PATH_50ETF_FUTURE)
-
     return data
 
 

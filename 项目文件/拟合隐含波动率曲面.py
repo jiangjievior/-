@@ -39,14 +39,14 @@ def construct_volatility_surface(
         Y = data_date['ln(IV)']  # 被解释变量
         model, params, tvalues, pvalues, resid, F, p_F, R_2 = OLS_model(X, Y)
 
-        models[date]=model
+        models[date]=model#?
         print(f'拟合隐含波动率曲面模型已经完成{date}')
 
 
     #建立隐含波动率曲面时间序列
 
     #将底部格点恢复成并列结构
-    grids=[[x,y] for x in grids[0] for y in WINDOWS_YEARS]#
+    grids=[[x,y] for x in grids[0] for y in WINDOWS_YEARS]#?
     volatility_surface=pd.DataFrame(grids,columns=['K/F','years'])#波动率期限结构（在值程度和到期时间）
     volatility_surface['(K/F)^2'] = volatility_surface['K/F'] ** 2
     volatility_surface['years*(K/F)'] = volatility_surface['years'] * volatility_surface['K/F']

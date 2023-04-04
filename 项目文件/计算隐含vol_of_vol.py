@@ -15,21 +15,21 @@ def implied_vol_of_vol(path_surface_series:str,#隐含波动率曲面时间序�
                     moneyness=1,#在值程度
 
                     )->pd.DataFrame:
-    surface_series=pd.read_csv(path_surface_series)
-    surface_series=surface_series[surface_series[C.KF]==moneyness]
+    surface_series=pd.read_csv(path_surface_series)#读取波动率曲面时间序列数据
+    surface_series=surface_series[surface_series[C.KF]==moneyness]#筛选出平值期权
     surface_series=pd.pivot_table(surface_series,index=C.TradingDate,columns='years',values='IV')
 
-    date_s=surface_series.index.tolist()
+    date_s=surface_series.index.tolist()#根据条件获取元素所在的位置（索引）
 
     lags=20
     vol_of_vol_s= {}
-    for date in date_s[lags:]:
+    for date in date_s[lags:]:#？
         try:
-            IV_date=surface_series.loc[date_s[date_s.index(date)-lags]:date,:]
-            IV_mean=IV_date.sum()/lags
-            vol_of_vol=(np.sqrt(((IV_date-IV_mean)**2).sum()/lags)/IV_mean).tolist()
+            IV_date=surface_series.loc[date_s[date_s.index(date)-lags]:date,:]#根据索引获取某一data二十天前的索引对应的date到当日date的数据
+            IV_mean=IV_date.sum()/lags#过去20天IV平方和除以20
+            vol_of_vol=(np.sqrt(((IV_date-IV_mean)**2).sum()/lags)/IV_mean).tolist()#计算vov的公式，将vov转化为列表
             vol_of_vol_s[date]=vol_of_vol
-            print(f'计算moneyness为{moneyness}Q_VV已经完成{date_s.index(date)/len(date_s)}')
+            print(f'计算moneyness为{moneyness}Q_VV已经完成{date_s.index(date)/len(date_s)}')#qvv计算
         except:
             continue
 
