@@ -83,6 +83,12 @@ class Columns():
     FutureRemainingTerm='FutureRemainingTerm'#期货距离到期日剩余年数
     ExpirationMonth='ExpirationMonth'#到期月份
     OptionExpirationMonth='OptionExpirationMonth'#期权到期月份
+    QVV='QVV'
+    Gains_lag1='gains(-1)'#收益率滞后一阶
+    P_SKEW='P_SKEW'#P测度的偏度
+    P_KURT = 'P_KURT'  # P测度的峰度
+    Q_SKEW = 'Q_SKEW'  # Q测度的偏度
+    Q_KURT = 'Q_KURT'  # Q测度的峰度
 
 
 C= Columns()
@@ -105,6 +111,22 @@ PATH_Moneyness_GAINS_OLS_IV_and_QVV=data_real_path('数据文件/生成数据') 
 MONEYNESS_BIN=pd.IntervalIndex.from_tuples([(-0.03, 0.03), (0.03, 0.1), (-0.1, -0.03)])
 PATH_GAINS_OLS_IV_and_QVV_YEARS=data_real_path('数据文件/生成数据') + '/GAINS_OLS_IV_and_QVV_YEARS回归结果.csv'
 
+MODELS_GAINS_OLS_RV_QVV={
+    'model1':{'Y':[C.Gains_to_underlying],'X':[C.RV]},
+    'model2':{'Y':[C.Gains_to_underlying],'X':[C.QVV]},
+    'model3':{'Y':[C.Gains_to_underlying],'X':[C.RV,C.QVV]},
+    'model4': {'Y': [C.Gains_to_underlying], 'X': [C.RV]},
+    'model5': {'Y': [C.Gains_to_underlying], 'X': [C.QVV]},
+    'model6': {'Y': [C.Gains_to_underlying], 'X': [C.RV, C.QVV]},
+}
+
+
+
+
+
+
+
+
 
 
 #跳跃风险
@@ -113,11 +135,22 @@ PATH_JUMP=data_real_path('数据文件/生成数据') + '/跳跃风险时间序�
 #深度虚值看跌跳跃、虚值看跌跳跃、平值看跌跳跃、实值看涨跳跃、深度实值看涨跳跃
 COL_JUMP=['JDOP','JOP','JA','JOC','JDOC']#
 PATH_GAINS_OLS_IV_and_QVV_JUMP=data_real_path('数据文件/生成数据') + '/GAINS_OLS_IV_and_QVV_JUMP回归结果.csv'
-
+PATH_GAINS_OLS_RV_and_QVV_JUMP=data_real_path('数据文件/生成数据') + '/GAINS_OLS_RV_and_QVV_JUMP回归结果.csv'
 
 #绘图
 PATH_IV_SURFACE_3D= data_real_path('数据文件/生成数据') + '/隐含波动率曲面3D图.png'
 PATH_QVV_SURFACE_3D= data_real_path('数据文件/生成数据') + '/QVV曲面3D图.png'
+
+
+#考虑偏度和峰度风险
+K_DIFF=0.05#执行价格的间距，用于计算
+PATH_P_SKEW=data_real_path('数据文件/生成数据') + '/P偏度时间序列.csv'
+PATH_Q_SKEW=data_real_path('数据文件/生成数据') + '/Q偏度时间序列.csv'
+PATH_P_KURT=data_real_path('数据文件/生成数据') + '/P峰度时间序列.csv'
+PATH_Q_KURT=data_real_path('数据文件/生成数据') + '/Q峰度时间序列.csv'
+
+
+
 
 
 

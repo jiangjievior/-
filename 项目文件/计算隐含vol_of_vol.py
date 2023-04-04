@@ -66,11 +66,8 @@ def vol_of_vol_moneyness(path_save=False):
 
 if __name__=='__main__':
 
-    path_surface_series=data_real_path('数据文件/生成数据/隐含波动率曲面时间序列.csv')
-    path_save=data_real_path('数据文件/生成数据')+'/隐含vol_of_vol.csv'
-    implied_vol_of_vol(path_surface_series)
-
-    vol_of_vol_moneyness()
+    implied_vol_of_vol(PATH_IV_SURFACE_SERIES,path_save=PATH_Q_VV)#计算基于平值期权计算的VV
+    vol_of_vol_moneyness(path_save=PATH_Q_VV_Moneyness)#计算基于不同在值程度期权计算的VV
 
 
 
