@@ -25,7 +25,7 @@ def construct_volatility_surface(
     # 按照  ln(IV)=b1+b2*K/F+b3*(K/F)^2+b4*years+b5*(years*K/F)
     #参考陈蓉（2010）
     data['ln(IV)']=np.log(data['ImpliedVolatility'])
-    data['K/F'] =data['StrikePrice']/data['UnderlyingScrtClose']
+    #data['K/F'] =data['StrikePrice']/(data['UnderlyingScrtClose']*np.exp(data[C.RisklessRate]/100*data[C.RemainingTerm]))
     data['(K/F)^2'] =data['K/F']**2
     data['years']=data['RemainingTerm']
     data['years*(K/F)']=data['years']*data['K/F']
