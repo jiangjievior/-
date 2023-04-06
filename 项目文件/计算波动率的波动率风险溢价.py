@@ -24,7 +24,7 @@ def Premium_VV(
         for col in Q_VV.columns[:-1]:
             Premium[col]=(Q_VV['P_VV']-Q_VV[col]).values
         Premium=pd.DataFrame(Premium)
-        Premium.mean()
+        Premium.mean()#?
 
 
 
@@ -33,6 +33,12 @@ def Premium_VV(
     pass
 
 
+if __name__=='__main__':
+  Premium_VV(
+    path_Q_VV=PATH_Q_VV,
+    path_P_VV=PATH_P_VV,
+    type_P_VV=1
+  )
 
 
 

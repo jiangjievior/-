@@ -1,6 +1,6 @@
 import Cython.Compiler.TypeSlots
 import click.decorators
-import commctrl
+#import commctrl
 import pandas as pd
 import numpy as np
 import os
@@ -73,19 +73,19 @@ class DeltaNeutralGains():
     def run(self,path_save):
 
         #计算次日股票价格
-        ETF=self.option[[self.col_TradingDate,self.col_UnderlyingScrtClose]].drop_duplicates().sort_values(self.col_TradingDate)
-        ETF['next_Underlying']=ETF[self.col_UnderlyingScrtClose].shift(-1)
-        self.option=pd.merge(self.option,ETF[[self.col_TradingDate,'next_Underlying']],on=[self.col_TradingDate])
+        ETF=self.option[[self.col_TradingDate,self.col_UnderlyingScrtClose]].drop_duplicates().sort_values(self.col_TradingDate)#选取option中的交易日和标的资产收盘价，放入ETF表
+        ETF['next_Underlying']=ETF[self.col_UnderlyingScrtClose].shift(-1)#ETF表中生成次日标的资产价格
+        self.option=pd.merge(self.option,ETF[[self.col_TradingDate,'next_Underlying']],on=[self.col_TradingDate])#把ETF中的交易日和次日标的资产价格与option合并
 
-
+        #每日delta中性收益计算,用的年利率，要乘1/242
         self.option['gains']=self.option['next_Close']-self.option[self.col_ClosePrice]-self.option[self.col_Delta]*\
         (self.option['next_Underlying']-self.option[self.col_UnderlyingScrtClose])-self.option[self.col_RisklessRate]/100* \
                              (self.option[self.col_ClosePrice]-self.option[self.col_Delta]*self.option[self.col_UnderlyingScrtClose])*self.tao
 
         #test
-        gains=self.option[[C.TradingDate, C.ShortName, C.Delta, C.CallOrPut, C.Gains,C.UnderlyingScrtClose]].dropna()
-        pd.pivot_table(gains,index=[C.CallOrPut],values=['gains'])
-        np.corrcoef(gains['gains'],gains[C.UnderlyingScrtClose])
+        gains=self.option[[C.TradingDate, C.ShortName, C.Delta, C.CallOrPut, C.Gains,C.UnderlyingScrtClose]].dropna()#C.gains就是self.option['gains']
+        pd.pivot_table(gains,index=[C.CallOrPut],values=['gains'])#？
+        np.corrcoef(gains['gains'],gains[C.UnderlyingScrtClose])#？
 
 
         #计算gains/S
@@ -95,7 +95,7 @@ class DeltaNeutralGains():
 
         self.option.to_csv(path_save,encoding='utf_8_sig',index=False)
 
-        self.option[self.option[C.CallOrPut]=='C'][C.Gains_to_underlying].describe()
+        self.option[self.option[C.CallOrPut]=='C'][C.Gains_to_underlying].describe()#输出描述性统计
         self.option[self.option[C.CallOrPut] == 'P'][C.Gains_to_underlying].describe()
 
 
