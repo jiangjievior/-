@@ -76,7 +76,7 @@ def clean_data(data,
     data.drop(index_p, axis=0, inplace=True)#删除不满足套利条件的期权
 
     #计算在值程度:参考陈蓉(2010)《隐含波动率曲面_建模与实证_陈蓉》.P144
-    data[C.KF]=data['StrikePrice']/(data['UnderlyingScrtClose']*np.exp(-data['RemainingTerm']*data['RisklessRate']/100))
+    data[C.KF]=data['StrikePrice']/(data['UnderlyingScrtClose']*np.exp(data['RemainingTerm']*data['RisklessRate']/100))
 
 
     if path_save:

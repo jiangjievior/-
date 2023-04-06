@@ -12,9 +12,9 @@ from 项目文件.数据清洗 import get_data, clean_data
 ########################################################################################################################
 #一、数据基本处理
 ########################################################################################################################
-#1.数据清洗
-data = get_data()
-data = clean_data(data,path_save=PATH_50ETF_OPTION)
+# #1.数据清洗
+# data = get_data()
+# data = clean_data(data,path_save=PATH_50ETF_OPTION)
 
 
 ########################################################################################################################
@@ -51,18 +51,18 @@ from 项目文件.计算隐含vol_of_vol import implied_vol_of_vol, vol_of_vol_m
 # implied_vol_of_vol(PATH_IV_SURFACE_SERIES,path_save=PATH_Q_VV)#计算基于平值期权计算的VV
 # vol_of_vol_moneyness(path_save=PATH_Q_VV_Moneyness)#计算基于不同在值程度期权计算的VV
 
-# #4.绘制隐含VV曲面3D图
-# VV=pd.read_csv(PATH_Q_VV_Moneyness)
-# VV=pd.pivot_table(VV,index=[C.KF],values=[str(x) for x in WINDOWS_DAYS_NATURAL])[[str(x) for x in WINDOWS_DAYS_NATURAL]]
-# VV.columns=VV.columns.astype(int)
-# plot_3D_surface(data = VV.T,
-#                 x_label = 'Maturity(days)',
-#                 y_label = C.KF,
-#                 z_label = 'QVV',
-#                 save_path = PATH_QVV_SURFACE_3D)
-#
-#
-# pass
+#4.绘制隐含VV曲面3D图
+VV=pd.read_csv(PATH_Q_VV_Moneyness)
+VV=pd.pivot_table(VV,index=[C.KF],values=[str(x) for x in WINDOWS_DAYS_NATURAL[:-2]])[[str(x) for x in WINDOWS_DAYS_NATURAL[:-2]]]
+VV.columns=VV.columns.astype(int)
+plot_3D_surface(data = VV.T,
+                x_label = 'Maturity(days)',
+                y_label = C.KF,
+                z_label = 'QVV',
+                save_path = PATH_QVV_SURFACE_3D)
+
+
+pass
 ########################################################################################################################
 #三.计算已实现波动率 和 已实现含波动率的波动率
 ########################################################################################################################
@@ -82,13 +82,13 @@ from 项目文件.计算隐含vol_of_vol import implied_vol_of_vol, vol_of_vol_m
 ########################################################################################################################
 #四.判断风险的系统性与正负性
 ########################################################################################################################
-# from 项目文件.判断风险的系统性与正负性 import COV_between_QVV_and_M
-#
-# #计算全样本的风险的系统性与正负性
-# option = pd.read_csv(PATH_50ETF_OPTION)
-# corr_s=COV_between_QVV_and_M(option=PATH_50ETF_OPTION,path_save=PATH_RISK_SYSMETRIC)
-#
-# corr_s
+from 项目文件.判断风险的系统性与正负性 import COV_between_QVV_and_M
+
+#计算全样本的风险的系统性与正负性
+option = pd.read_csv(PATH_50ETF_OPTION)
+corr_s=COV_between_QVV_and_M(option=PATH_50ETF_OPTION,path_save=PATH_RISK_SYSMETRIC)
+
+corr_s
 
 
 
@@ -109,10 +109,10 @@ from 项目文件.计算隐含vol_of_vol import implied_vol_of_vol, vol_of_vol_m
 ########################################################################################################################
 #六.计算期权delta中性收益
 #######################################################################################################################
-# from 项目文件.计算delta中性收益 import DeltaNeutralGains
-#
-# DNG = DeltaNeutralGains(path_option=PATH_50ETF_OPTION)
-# DNG.run(path_save=PATH_GAINS_DELTA_NEUTRAL_ChenRong2011)
+from 项目文件.计算delta中性收益 import DeltaNeutralGains
+
+DNG = DeltaNeutralGains(path_option=PATH_50ETF_OPTION)
+DNG.run(path_save=PATH_GAINS_DELTA_NEUTRAL_ChenRong2011)
 
 
 ########################################################################################################################
@@ -167,15 +167,40 @@ results_7=reformat_run_7()
 pass
 
 ########################################################################################################################
-#九.样本分组，检查子样本组内的回归稳健性
+#九.样本分组，检查子样本组内的回归稳健性(已经验证不太行)
 ########################################################################################################################
-from 项目文件.修改数据结果格式 import reformat_run_1,reformat_run_2,reformat_run_3
+# from 项目文件.修改数据结果格式 import reformat_run_1,reformat_run_2,reformat_run_3
+# from 项目文件.拟合delta中性收益与风险的时间序列关系_新版 import SeriesOlsGainsAndRisk
+# # 普通OLS回归:用 gains/S = IV^2 + QVV + gains/S(-1) 在时间序列上回归
+# # gains/S 是一个单条时间序列，每个时间点上的值为所有moneyness对应的均值
+# SOGAR = SeriesOlsGainsAndRisk()
+# SOGAR.run_6()
+# results_1=reformat_run_1()
+
+########################################################################################################################
+#十.考虑偏度和峰度风险
+########################################################################################################################
+from 项目文件.修改数据结果格式 import reformat_run_8,reformat_run_9
 from 项目文件.拟合delta中性收益与风险的时间序列关系_新版 import SeriesOlsGainsAndRisk
-# 普通OLS回归:用 gains/S = IV^2 + QVV + gains/S(-1) 在时间序列上回归
-# gains/S 是一个单条时间序列，每个时间点上的值为所有moneyness对应的均值
+
+
+# 普通OLS回归:用 gains/S = RV^2 + QVV^2+ Q_SKEW+Q_KURT + gains/S(-1) 在时间序列上回归
+# gains/S 是多条时间序列，按照moneyness(K/F)分别在每种moneyness上进行回归
+SOGAR=SeriesOlsGainsAndRisk()
+SOGAR.run_8()
+reformat_run_8()
+
+# # 普通OLS回归:用 gains/S = IV^2 + QVV^2+ Q_SKEW+Q_KURT + gains/S(-1) 在时间序列上回归
+# gains/S 是多条时间序列，按照moneyness(K/F)分别在每种moneyness上进行回归
 SOGAR = SeriesOlsGainsAndRisk()
-SOGAR.run_6()
-results_1=reformat_run_1()
+SOGAR.run_9()
+reformat_run_9()
+
+
+
+########################################################################################################################
+#终.论文中最终展示表格
+########################################################################################################################
 
 
 
@@ -185,6 +210,18 @@ results_1=reformat_run_1()
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+pass
 
 
 

@@ -136,6 +136,52 @@ def reformat_run_7():
     return results
 
 
+#修改格式
+#'数据文件/生成数据/GAINS_OLS_IV_and_QVV_JUMP回归结果.csv'
+def reformat_run_8():
+    data=pd.read_csv(PATH_GAINS_OLS_IV_and_QVV_QSKEW_QKURT)
+    data=data[data['type_gain']==C.Gains_to_underlying]
+
+    results = []
+    cols = ['IV', 'QVV',C.Q_SKEW,C.Q_KURT, 'gains(-1)']
+    for col in cols:
+        result = ((data[col]*100).round(2).astype(str) + '(' + (data['t' + col].round(2)).astype(str) + ')' + data[
+            'p' + col].apply(lambda x: star(x))).tolist()
+        results.append(result)
+
+    results = pd.DataFrame(results, index=cols).T
+    results['R'] = data['R'].round(3).values
+    results.insert(loc=1, column='Maturity', value=data['Maturity'].values)
+    results = results.loc[results['Maturity'] != '360', :]
+
+    results.to_csv(path_reformat(PATH_GAINS_OLS_IV_and_QVV_QSKEW_QKURT),encoding='utf_8_sig',index=False)
+
+    return results
+
+
+#修改格式
+#'数据文件/生成数据/GAINS_OLS_RV_and_QVV_JUMP回归结果.csv'
+def reformat_run_9():
+    data=pd.read_csv(PATH_GAINS_OLS_RV_and_QVV_QSKEW_QKURT)
+    data=data[data['type_gain']==C.Gains_to_underlying]
+
+    results = []
+    cols = ['RV', 'QVV',C.Q_SKEW,C.Q_KURT, 'gains(-1)']
+    for col in cols:
+        result = ((data[col]*100).round(3).astype(str) + '(' + (data['t' + col].round(2)).astype(str) + ')' + data[
+            'p' + col].apply(lambda x: star(x))).tolist()
+        results.append(result)
+
+    results = pd.DataFrame(results, index=cols).T
+    results['R'] = data['R'].round(3).values
+    results.insert(loc=0, column='Maturity', value=data['Maturity'].values)
+    results = results.loc[results['Maturity'] != '360', :]
+
+    results.to_csv(path_reformat(PATH_GAINS_OLS_RV_and_QVV_QSKEW_QKURT),encoding='utf_8_sig',index=False)
+
+    return results
+
+
 
 if __name__=='__main__':
     reformat_run_4()
