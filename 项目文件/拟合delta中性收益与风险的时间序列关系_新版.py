@@ -1,5 +1,5 @@
 # -*- coding:utf-8 -*-
-import commctrl
+#import commctrl
 
 from 功能文件.模型拟合.拟合OLS模型 import OLS_model
 from 功能文件.辅助功能.Debug时获取外部数据绝对路径 import data_real_path

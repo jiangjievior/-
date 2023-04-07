@@ -18,7 +18,7 @@ def star(p):
 
 #输入原来路径，生成修改后的路径，以作区分
 def path_reformat(path):
-    path=path[:-4]+'_格式修改'+path[-4:]
+    path=path[:-4]+'_格式修改'+path[-4:]#？
     return path
 
 
