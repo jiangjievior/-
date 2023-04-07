@@ -23,7 +23,7 @@ class SeriesOlsGainsAndRisk():
         self.IV=pd.read_csv(PATH_IV_SURFACE_SERIES)
         self.RV=pd.read_csv(PATH_RV)
         self.Q_VV=pd.read_csv(PATH_Q_VV)
-        #self.Q_SKEW_KURT=pd.read_csv(PATH_Q_SKEW_KURT)
+        self.Q_SKEW_KURT=pd.read_csv(PATH_Q_SKEW_KURT)
 
         self.def_col()
         self.combine_data()
@@ -57,10 +57,10 @@ class SeriesOlsGainsAndRisk():
         self.At_IV.reset_index(inplace=True)
         self.gains=pd.merge(self.gains,self.At_IV,on=[C.TradingDate])
 
-        # #添加Q_SKEW和Q_KURT数据
-        # self.Q_SKEW_KURT
-        # self.gains=pd.merge(self.gains,self.Q_SKEW_KURT[[C.TradingDate,C.Q_SKEW,C.Q_KURT]],on=[C.TradingDate])
-        # self.gains[C.Q_KURT]/=100
+        #添加Q_SKEW和Q_KURT数据
+        self.Q_SKEW_KURT
+        self.gains=pd.merge(self.gains,self.Q_SKEW_KURT[[C.TradingDate,C.Q_SKEW,C.Q_KURT]],on=[C.TradingDate])
+        self.gains[C.Q_KURT]/=100
 
 
 

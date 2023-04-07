@@ -22,9 +22,10 @@ def get_data():
        'ContractCode','SettlePrice', 'Change1',
        'Change2', 'Volume', 'Position', 'Amount']],on=['TradingDate','ContractCode'])#把交易量数据加入到价格数据中
 
-    #计算期权的次日价格
+    #计算期权的次日价格、隐含波动率
     data.sort_values(['ContractCode','TradingDate'],inplace=True)#按照交易日和编码排序，在原表格进行替换
     data['next_Close']=data['ClosePrice'].shift(-1)#把列表上移一行
+    data['next_ImpliedVolatility'] = data[C.ImpliedVolatility].shift(-1)  # 把列表上移一行
     #为了方便，直接排序平移，因此会把第二个期权的初始价格移动至第一个期权的末尾，需要处理！！
     data.reset_index(inplace=True)#重置索引，就地重置索引，设置inplace参数为True，否则将创建一个新的 DataFrame
     data['index']=data.index#重新分配索引
