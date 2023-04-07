@@ -19,11 +19,11 @@ def implied_vol_of_vol(path_surface_series:str,#隐含波动率曲面时间序�
     surface_series=surface_series[surface_series[C.KF]==moneyness]#筛选出平值期权
     surface_series=pd.pivot_table(surface_series,index=C.TradingDate,columns='years',values='IV')
 
-    date_s=surface_series.index.tolist()#根据条件获取元素所在的位置（索引）
+    date_s=surface_series.index.tolist()#根据条件获取元素所在的位置（索引），获取交易日时间序列
 
     lags=20
-    vol_of_vol_s= {}
-    for date in date_s[lags:]:#？
+    vol_of_vol_s= {}#？
+    for date in date_s[lags:]:#
         try:
             IV_date=surface_series.loc[date_s[date_s.index(date)-lags]:date,:]#根据索引获取某一data二十天前的索引对应的date到当日date的数据
             IV_mean=IV_date.sum()/lags#过去20天IV平方和除以20
