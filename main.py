@@ -12,9 +12,9 @@ from 项目文件.数据清洗 import get_data, clean_data
 ########################################################################################################################
 #一、数据基本处理
 ########################################################################################################################
-# #1.数据清洗
-# data = get_data()
-# data = clean_data(data,path_save=PATH_50ETF_OPTION)
+ #1.数据清洗
+data = get_data()
+data = clean_data(data,path_save=PATH_50ETF_OPTION)
 
 ########################################################################################################################
 #二.计算隐含波动率 和 隐含波动率的波动率
@@ -110,9 +110,9 @@ from 项目文件.计算隐含vol_of_vol import implied_vol_of_vol, vol_of_vol_m
 #######################################################################################################################
 from 项目文件.计算delta中性收益 import DeltaNeutralGains
 
-# #1.用上证50ETF指数计算delta中性收益
-# DNG = DeltaNeutralGains(path_option=PATH_50ETF_OPTION)
-# DNG.run(path_save=PATH_GAINS_DELTA_NEUTRAL_ChenRong2011)
+#1.用上证50ETF指数计算delta中性收益
+DNG = DeltaNeutralGains(path_option=PATH_50ETF_OPTION)
+DNG.run(path_save=PATH_GAINS_DELTA_NEUTRAL_ChenRong2011)
 
 #2.对delta中性收益进行描述性统计分析
 ##参考：陈蓉2019，《波动率风险和波动率风险溢酬 中国的独特现象?》，p3005

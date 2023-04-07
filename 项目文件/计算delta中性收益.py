@@ -89,7 +89,8 @@ class DeltaNeutralGains():
 
 
         #计算gains/S
-        self.option[C.Gains_to_underlying]=self.option[C.Gains]/self.option[C.UnderlyingScrtClose]
+        #self.option[C.Gains_to_underlying]=self.option[C.Gains]/self.option[C.UnderlyingScrtClose]
+        self.option[C.Gains_to_underlying] = self.option[C.Gains] / self.option[C.Vega]
         # 计算gains/期权价格
         self.option[C.Gains_to_option] = self.option[C.Gains] / self.option[C.ClosePrice]
 
