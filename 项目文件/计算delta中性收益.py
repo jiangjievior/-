@@ -99,6 +99,64 @@ class DeltaNeutralGains():
         self.option[self.option[C.CallOrPut] == 'P'][C.Gains_to_underlying].describe()
 
 
+    #对delta中性收益进行描述性统计分析
+    def gains_delta_neutral_summary(self):
+        
+        self.option=self.option[((self.option[C.KF]>=0.97)&(self.option[C.KF]<=1.1)&(self.option[C.CallOrPut]=='C'))|\
+                              ((self.option[C.KF]>=0.90)&(self.option[C.KF]<=1.03)&(self.option[C.CallOrPut]=='P'))]
+
+
+        #剔除极端值
+        self.option=self.option[(self.option[C.Gains_to_underlying]>=self.option[C.Gains_to_underlying].quantile(0.01))&\
+                                (self.option[C.Gains_to_underlying]<=self.option[C.Gains_to_underlying].quantile(0.99))]
+
+
+        # 按照在值程度对样本分类
+        self.option[C.KF_minus_1] = self.option[C.KF] - 1
+        self.option[C.KF_minus_1_bin] = self.option[C.CallOrPut] + (
+            pd.cut(self.option[C.KF_minus_1], bins=MONEYNESS_BIN)).astype(str)
+
+        col_panel_Gains = self.option[C.KF_minus_1_bin].unique()
+
+        #按照剩余到期时间对样本分类
+        self.option[C.Maturity_bin]=  (
+            pd.cut(self.option[C.RemainingTerm], bins=MATURITY_BIN)).astype(str)
+
+        summary=pd.pivot_table(self.option[[C.KF_minus_1_bin,C.Maturity_bin,C.Gains_to_underlying]].dropna(),index=[C.KF_minus_1_bin],columns=[C.Maturity_bin],\
+                       values=[C.Gains_to_underlying],aggfunc=[np.mean,np.std]
+                       )
+
+        #为了展示简洁，数字全部乘以10000处理
+        summary*=10000
+        summary.round(3).to_csv(PATH_GAINS_DELTA_NEUTRAL_SUMMARY,encoding='utf_8_sig')
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 # 计算期权delta中性收益,使用上证50ETF期货价格
 # 参考陈蓉（2019），波动率风险和波动率风险溢酬：中国的独特现象

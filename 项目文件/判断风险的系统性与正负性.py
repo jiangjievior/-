@@ -15,7 +15,7 @@ import statsmodels.api as sm
 def COV_between_QVV_and_M(
         option,path_save=False
 ):
-    option=pd.read_csv(PATH_50ETF_OPTION)
+    #option=pd.read_csv(PATH_50ETF_OPTION)
     under=option[['TradingDate','UnderlyingScrtClose']].drop_duplicates().sort_values('TradingDate')
     under['r_Underlying']=np.log(under['UnderlyingScrtClose']/under['UnderlyingScrtClose'].shift())
 
@@ -30,7 +30,7 @@ def COV_between_QVV_and_M(
     under=pd.merge(under,Q_VV,on=['TradingDate'])
 #    under = pd.merge(under, P_VV, on=['TradingDate'])
     under = pd.merge(under, RV, on=['TradingDate'])
-    under=under[under['r_Underlying']<=under['r_Underlying'].quantile(0.5)]#筛选出小于0.5分位数的收益率 ？
+    #under=under[under['r_Underlying']<=under['r_Underlying'].quantile(0.5)]#筛选出小于0.5分位数的收益率 ？
 
 
     corr_s=[]

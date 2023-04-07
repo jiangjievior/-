@@ -16,7 +16,6 @@ from 项目文件.数据清洗 import get_data, clean_data
 # data = get_data()
 # data = clean_data(data,path_save=PATH_50ETF_OPTION)
 
-
 ########################################################################################################################
 #二.计算隐含波动率 和 隐含波动率的波动率
 # 参考陈蓉（2010）,按照  ln(IV)=b1+b2*K/S+b3*(K/S)^2+b4*years+b5*(years*K/S) 建立隐含波动率曲面
@@ -51,18 +50,18 @@ from 项目文件.计算隐含vol_of_vol import implied_vol_of_vol, vol_of_vol_m
 # implied_vol_of_vol(PATH_IV_SURFACE_SERIES,path_save=PATH_Q_VV)#计算基于平值期权计算的VV
 # vol_of_vol_moneyness(path_save=PATH_Q_VV_Moneyness)#计算基于不同在值程度期权计算的VV
 
-#4.绘制隐含VV曲面3D图
-VV=pd.read_csv(PATH_Q_VV_Moneyness)
-VV=pd.pivot_table(VV,index=[C.KF],values=[str(x) for x in WINDOWS_DAYS_NATURAL[:-2]])[[str(x) for x in WINDOWS_DAYS_NATURAL[:-2]]]
-VV.columns=VV.columns.astype(int)
-plot_3D_surface(data = VV.T,
-                x_label = 'Maturity(days)',
-                y_label = C.KF,
-                z_label = 'QVV',
-                save_path = PATH_QVV_SURFACE_3D)
-
-
-pass
+# #4.绘制隐含VV曲面3D图
+# VV=pd.read_csv(PATH_Q_VV_Moneyness)
+# VV=pd.pivot_table(VV,index=[C.KF],values=[str(x) for x in WINDOWS_DAYS_NATURAL[:-2]])[[str(x) for x in WINDOWS_DAYS_NATURAL[:-2]]]
+# VV.columns=VV.columns.astype(int)
+# plot_3D_surface(data = VV.T,
+#                 x_label = 'Maturity(days)',
+#                 y_label = C.KF,
+#                 z_label = 'QVV',
+#                 save_path = PATH_QVV_SURFACE_3D)
+#
+#
+# pass
 ########################################################################################################################
 #三.计算已实现波动率 和 已实现含波动率的波动率
 ########################################################################################################################
@@ -72,7 +71,7 @@ pass
 # #1.计算已实现波动率
 # RV(path_save=PATH_RV)
 
-# #2.计算已实现含波动率的波动率
+# #2.计算已实现含波动率的波动率(由于找不到合适的参考问献，已经废弃)
 # realized_vol_of_vol(path_close_5_min=PATH_50ETF_5MIN,
 #                     windows=WINDOWS_DAYS,
 #                     path_save=PATH_P_VV,
@@ -82,13 +81,13 @@ pass
 ########################################################################################################################
 #四.判断风险的系统性与正负性
 ########################################################################################################################
-from 项目文件.判断风险的系统性与正负性 import COV_between_QVV_and_M
-
-#计算全样本的风险的系统性与正负性
-option = pd.read_csv(PATH_50ETF_OPTION)
-corr_s=COV_between_QVV_and_M(option=PATH_50ETF_OPTION,path_save=PATH_RISK_SYSMETRIC)
-
-corr_s
+# from 项目文件.判断风险的系统性与正负性 import COV_between_QVV_and_M
+#
+# #计算全样本的风险的系统性与正负性
+# option = pd.read_csv(PATH_50ETF_OPTION)
+# corr_s=COV_between_QVV_and_M(option=PATH_50ETF_OPTION,path_save=PATH_RISK_SYSMETRIC)
+#
+# corr_s
 
 
 
@@ -111,8 +110,17 @@ corr_s
 #######################################################################################################################
 from 项目文件.计算delta中性收益 import DeltaNeutralGains
 
+# #1.用上证50ETF指数计算delta中性收益
+# DNG = DeltaNeutralGains(path_option=PATH_50ETF_OPTION)
+# DNG.run(path_save=PATH_GAINS_DELTA_NEUTRAL_ChenRong2011)
+
+#2.对delta中性收益进行描述性统计分析
+##参考：陈蓉2019，《波动率风险和波动率风险溢酬 中国的独特现象?》，p3005
 DNG = DeltaNeutralGains(path_option=PATH_50ETF_OPTION)
 DNG.run(path_save=PATH_GAINS_DELTA_NEUTRAL_ChenRong2011)
+DNG.gains_delta_neutral_summary()
+
+
 
 
 ########################################################################################################################
@@ -195,6 +203,13 @@ reformat_run_8()
 SOGAR = SeriesOlsGainsAndRisk()
 SOGAR.run_9()
 reformat_run_9()
+
+
+
+
+
+
+
 
 
 

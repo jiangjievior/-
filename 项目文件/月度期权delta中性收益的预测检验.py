@@ -47,6 +47,7 @@ if __name__=='__main__':
         option_main=option[[C.TradingDate,C.ClosePrice,'next_Close',C.UnderlyingScrtClose,'next_Underlying']]
 
     gains_to_Maturity=pd.DataFrame(gains_to_Maturity,columns=[C.ShortName,C.ExerciseDate,'gain'])
+    gains_to_Maturity['gain'].describe()
 
 
 
