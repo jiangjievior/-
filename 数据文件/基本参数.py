@@ -23,6 +23,7 @@ PATH_FINAL_RESULTS=data_real_path('数据文件/生成数据/最终展示结果'
 #交易日窗口长度，基于中国期权上证50ETF
 DAYS_OF_YEAR=242#一年中交易日个数，参考陈蓉（2019）《波动率风险和波动率风险溢酬_中国的独特现象》 脚注9
 DAYS_OF_MONTH=20#一个月中交易日个数，参考陈蓉（2019）《波动率风险和波动率风险溢酬_中国的独特现象》 脚注9
+
 WINDOWS_MONTH=[1/3,1/2,2/3,1,2,3,6,12]#常需考察的期权剩余到期月数，参考 Carr and Wu(2020)《Option Profit and Loss Attribution and Pricing: A New Framework》 P2286
 WINDOWS_DAYS=[int(x*DAYS_OF_MONTH) for x in WINDOWS_MONTH]#常需考察的期权剩余到期天数
 WINDOWS_YEARS=[X/DAYS_OF_YEAR for X in WINDOWS_DAYS]#常需考察的期权剩余到期年数
@@ -34,7 +35,7 @@ DAYS_OF_MONTH_NATURAL=30#一个月中自然日个数
 
 WINDOWS_DAYS_NATURAL=[int(x*DAYS_OF_MONTH_NATURAL) for x in WINDOWS_MONTH]#常需考察的期权剩余到期天数
 WINDOWS_YEARS_NATURAL=[X/DAYS_OF_YEAR_NATURAL for X in WINDOWS_DAYS_NATURAL]#常需考察的期权剩余到期年数
-
+WINDOWS_INDEX=[1,3,4,5]#剩余到期时间的位置号：本文重点使用的剩余到期时间为1/2,1,2,3个月，其余为稳健性检验
 
 PATH_P_VV_2=data_real_path('数据文件/生成数据') + '/已实现vol_of_vol_2.csv'
 PATH_P_VV_3=data_real_path('数据文件/生成数据') + '/已实现vol_of_vol_3.csv'
@@ -78,6 +79,7 @@ class Columns():
     KF_bin='K/F_bin'
     KF_minus_1 = 'K/F-1'
     KF_minus_1_bin = 'K/F-1_bin'
+    Maturity_bin='Maturity_bin'
     FutureClose='FutureClose'#期货收盘价
     FutureExpiration='FutureExpiration'#期货到期日期
     FutureDelta='FutureDelta'
@@ -92,6 +94,7 @@ class Columns():
     Q_KURT = 'Q_KURT'  # Q测度的峰度
 
 
+
 C= Columns()
 
 #建立隐含波动率曲面时间序列
@@ -99,6 +102,7 @@ MONEYNESS_KF=[0.93,0.95,0.97,1,1.03,1.05,1.07]#在值程度，用于建立隐含
 
 #计算期权的delta中性收益
 COL_GAINS=[C.Gains,C.Gains_to_option,C.Gains_to_underlying]#期权收益类型
+PATH_GAINS_DELTA_NEUTRAL_SUMMARY=data_real_path('数据文件/生成数据') + '/陈蓉2011delta中性收益率的描述性统计分析.csv'
 
 #判断VV风险的系统性与正负性
 PATH_RISK_SYSMETRIC=data_real_path('数据文件/生成数据') + '/风险的系统性与正负性.csv'
@@ -109,7 +113,9 @@ COL_QVV=[f'QVV{x}' for x in WINDOWS_DAYS_NATURAL]
 PATH_GAINS_OLS_RV_and_QVV=data_real_path('数据文件/生成数据') + '/GAINS_OLS_RV_and_QVV回归结果.csv'
 PATH_GAINS_OLS_IV_and_QVV=data_real_path('数据文件/生成数据') + '/GAINS_OLS_IV_and_QVV回归结果.csv'
 PATH_Moneyness_GAINS_OLS_IV_and_QVV=data_real_path('数据文件/生成数据') + '/基于不同在值程度的GAINS_OLS_IV_and_QVV回归结果.csv'
-MONEYNESS_BIN=pd.IntervalIndex.from_tuples([(-0.03, 0.03), (0.03, 0.1), (-0.1, -0.03)])
+MONEYNESS_BIN=pd.IntervalIndex.from_tuples([(-0.03, 0.03), (0.03, 0.1), (-0.1, -0.03)])#按照在值程度分类的界限
+MATURITY_BIN=pd.IntervalIndex.from_tuples([(WINDOWS_YEARS_NATURAL[0], WINDOWS_YEARS_NATURAL[2]), (WINDOWS_YEARS_NATURAL[2], WINDOWS_YEARS_NATURAL[3]),\
+                                           (WINDOWS_YEARS_NATURAL[3], WINDOWS_YEARS_NATURAL[4])])#按照剩余到期时间的分类界限分类的界限
 PATH_GAINS_OLS_IV_and_QVV_YEARS=data_real_path('数据文件/生成数据') + '/GAINS_OLS_IV_and_QVV_YEARS回归结果.csv'
 
 MODELS_GAINS_OLS_RV_QVV={

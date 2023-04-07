@@ -29,7 +29,9 @@ class SeriesOlsGainsAndRisk():
         self.combine_data()
 
         # 剔除实值期权
-        self.gains = self.gains[self.gains[C.Delta].abs() <= 0.5]
+        #参考：陈蓉2019，《波动率风险和波动率风险溢酬 中国的独特现象?》，p3005
+        self.gains=self.gains[((self.gains[C.KF]>=0.97)&(self.gains[C.KF]<=1.1)&(self.gains[C.CallOrPut]=='C'))|\
+                              ((self.gains[C.KF]>=0.90)&(self.gains[C.KF]<=1.03)&(self.gains[C.CallOrPut]=='P'))]
 
         #建立日度均值时间序列
         self.gains_pivot = pd.pivot_table(self.gains, index=[self.col_TradingDate],
@@ -67,7 +69,7 @@ class SeriesOlsGainsAndRisk():
     #gains/S 是一个单条时间序列，每个时间点上的值为所有moneyness对应的均值
     def run_1(self):
 
-        #self.gains_pivot=self.gains_pivot.loc[self.gains_pivot.index<='2017-01-01',:]
+        #self.gains_pivot=self.gains_pivot.loc[self.gains_pivot.index>='2019-01-01',:]
 
         results=[]
 
@@ -78,6 +80,8 @@ class SeriesOlsGainsAndRisk():
                 X = self.gains_pivot[[f'{x}{days}' for x in col_X]]
                 X[C.Gains_lag1] = self.gains_pivot[C.Gains_to_underlying].shift().fillna(method='bfill')
                 Y = self.gains_pivot[C.Gains_to_underlying]
+                # X[C.Gains_lag1] = self.gains_pivot[C.Gains].shift().fillna(method='bfill')
+                # Y = self.gains_pivot[C.Gains]
 
                 model, params, tvalues, pvalues, resid, F, p_F, R_2 = OLS_model(X, Y)
 
@@ -107,6 +111,8 @@ class SeriesOlsGainsAndRisk():
                 X = self.gains_pivot[col_X_]
                 X[C.Gains_lag1] = self.gains_pivot[C.Gains_to_underlying].shift().fillna(method='bfill')
                 Y = self.gains_pivot[C.Gains_to_underlying]
+                # X[C.Gains_lag1] = self.gains_pivot[C.Gains].shift().fillna(method='bfill')
+                # Y = self.gains_pivot[C.Gains]
 
                 model, params, tvalues, pvalues, resid, F, p_F, R_2 = OLS_model(X, Y)
 
@@ -160,8 +166,10 @@ class SeriesOlsGainsAndRisk():
                     Y = gains_pivot[col_panel_Gains[j]]
 
                     #剔除数据Nan值，并保持一致
-                    Y.dropna(inplace=True)
-                    X=X.loc[Y.index,:]
+                    set([1,2,3,4]).intersection(set([2,3,4,5,6]))
+                    index_common=set(Y.dropna().index).intersection(set(X.dropna().index))
+                    X=X.loc[index_common,:]
+                    Y=Y.loc[index_common]
 
                     model, params, tvalues, pvalues, resid, F, p_F, R_2 = OLS_model(X, Y)
 
@@ -502,6 +510,7 @@ class SeriesOlsGainsAndRisk():
 
     #普通回归
     def norm_OLS(self):
+        self.co
 
 
         pass

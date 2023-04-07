@@ -15,7 +15,7 @@ import statsmodels.api as sm
 def COV_between_QVV_and_M(
         option,path_save=False
 ):
-#    option=pd.read_csv(PATH_50ETF_OPTION)
+    #option=pd.read_csv(PATH_50ETF_OPTION)
     under=option[['TradingDate','UnderlyingScrtClose']].drop_duplicates().sort_values('TradingDate')
     under['r_Underlying']=np.log(under['UnderlyingScrtClose']/under['UnderlyingScrtClose'].shift())
 
@@ -30,7 +30,7 @@ def COV_between_QVV_and_M(
     under=pd.merge(under,Q_VV,on=['TradingDate'])
 #    under = pd.merge(under, P_VV, on=['TradingDate'])
     under = pd.merge(under, RV, on=['TradingDate'])
-    under=under[under['r_Underlying']<=under['r_Underlying'].quantile(0.5)]#筛选出小于0.5分位数的收益率 ？
+    #under=under[under['r_Underlying']<=under['r_Underlying'].quantile(0.5)]#筛选出小于0.5分位数的收益率 ？
 
 
     corr_s=[]
@@ -62,7 +62,6 @@ if __name__=='__main__':
     option=option[(option[C.TradingDate]>='2015-02-09')&(option[C.TradingDate]<='2016-07-08')]
     corr_s = COV_between_QVV_and_M(option=option)
 
-if __name__ == '__main__':
     #全范围样本
     option = pd.read_csv(PATH_50ETF_OPTION)
     corr_s=COV_between_QVV_and_M(option=option,path_save=PATH_RISK_SYSMETRIC)
@@ -78,7 +77,7 @@ if __name__ == '__main__':
 def COV_between_IV_and_M(
         option,path_save=False
 ):
-    #option=pd.read_csv(PATH_50ETF_OPTION)
+    option=pd.read_csv(PATH_50ETF_OPTION)
     under1=option[['TradingDate','UnderlyingScrtClose']].drop_duplicates().sort_values('TradingDate')
     under1['r_Underlying'] = np.log(under1['UnderlyingScrtClose'] / under1['UnderlyingScrtClose'].shift())
     RV=pd.read_csv(PATH_RV)
@@ -132,7 +131,7 @@ if __name__ == '__main__':
 
 
 
-#模仿冯志新，协方差的U统计量检验法
+
 
 
 
