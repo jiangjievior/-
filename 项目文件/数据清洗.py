@@ -79,6 +79,11 @@ def clean_data(data,
     #计算在值程度:参考陈蓉(2010)《隐含波动率曲面_建模与实证_陈蓉》.P144
     data[C.KF]=data['StrikePrice']/(data['UnderlyingScrtClose']*np.exp(data['RemainingTerm']*data['RisklessRate']/100))
 
+    # 按照在值程度分类分组
+    data[C.KF_minus_1] = data[C.KF] - 1
+    data[C.KF_minus_1_bin] = data[C.CallOrPut] + (
+        pd.cut(data[C.KF_minus_1], bins=MONEYNESS_BIN)).astype(str)
+
 
     if path_save:
         data.to_csv(path_save,encoding='utf_8_sig',index=False)

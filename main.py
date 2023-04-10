@@ -6,15 +6,17 @@ import numpy as np
 import os
 
 
-from 项目文件.数据清洗 import get_data, clean_data
+
 
 
 ########################################################################################################################
 #一、数据基本处理
 ########################################################################################################################
- #1.数据清洗
-data = get_data()
-data = clean_data(data,path_save=PATH_50ETF_OPTION)
+# from 项目文件.数据清洗 import get_data, clean_data
+#
+#  #1.数据清洗
+# data = get_data()
+# data = clean_data(data,path_save=PATH_50ETF_OPTION)
 
 ########################################################################################################################
 #二.计算隐含波动率 和 隐含波动率的波动率
@@ -116,44 +118,57 @@ from 项目文件.计算隐含vol_of_vol import implied_vol_of_vol, vol_of_vol_m
 ########################################################################################################################
 #六.计算期权delta中性收益
 #######################################################################################################################
-from 项目文件.计算delta中性收益 import DeltaNeutralGains
-
-#1.用上证50ETF指数计算delta中性收益
-DNG = DeltaNeutralGains(path_option=PATH_50ETF_OPTION)
-DNG.run(path_save=PATH_GAINS_DELTA_NEUTRAL_ChenRong2011)
-
-#2.对delta中性收益进行描述性统计分析
-##参考：陈蓉2019，《波动率风险和波动率风险溢酬 中国的独特现象?》，p3005
-DNG = DeltaNeutralGains(path_option=PATH_50ETF_OPTION)
-DNG.run(path_save=PATH_GAINS_DELTA_NEUTRAL_ChenRong2011)
-DNG.gains_delta_neutral_summary()
+from 项目文件.计算delta中性收益 import DeltaNeutralGains, DeltaNeutralGains2
 
 
+# #1.用上证50ETF指数计算delta中性收益，并对delta中性收益进行描述性统计分析
+# DNG = DeltaNeutralGains(path_option=PATH_50ETF_OPTION)
+# DNG.run(path_save=PATH_GAINS_DELTA_NEUTRAL_ChenRong2011)
+# DNG.gains_delta_neutral_summary()
+
+# #2.用上证50ETF指数期货计算delta中性收益，并对delta中性收益进行描述性统计分析
+# ##参考：陈蓉2019，《波动率风险和波动率风险溢酬 中国的独特现象?》，p3005
+# DNG = DeltaNeutralGains2(path_option=PATH_50ETF_OPTION)
+# DNG.run(path_save=PATH_GAINS_DELTA_NEUTRAL_ChenRong2011)
+# DNG.gains_delta_neutral_summary()
 
 
 ########################################################################################################################
 #七.用波动率和波动率的波动率预测期权delta中性收益
 ########################################################################################################################
-from 项目文件.修改数据结果格式 import reformat_run_1,reformat_run_2,reformat_run_3
-from 项目文件.拟合delta中性收益与风险的时间序列关系_新版 import SeriesOlsGainsAndRisk
-# 普通OLS回归:用 gains/S = IV^2 + QVV + gains/S(-1) 在时间序列上回归
-# gains/S 是一个单条时间序列，每个时间点上的值为所有moneyness对应的均值
-SOGAR = SeriesOlsGainsAndRisk()
-SOGAR.run_1()
-results_1=reformat_run_1()
-
-# 普通OLS回归:用 gains/S = RV + QVV + gains/S(-1) 在时间序列上回归
-# gains/S 是一个单条时间序列，每个时间点上的值为所有moneyness对应的均值
-SOGAR = SeriesOlsGainsAndRisk()
-SOGAR.run_2()
-results_2=reformat_run_2()
-
+# from 项目文件.修改数据结果格式 import reformat_run_1,reformat_run_2,reformat_run_3
+# from 项目文件.拟合delta中性收益与风险的时间序列关系_新版 import SeriesOlsGainsAndRisk
+# # 普通OLS回归:用 gains/S = IV^2 + QVV + gains/S(-1) 在时间序列上回归
+# # gains/S 是一个单条时间序列，每个时间点上的值为所有moneyness对应的均值
+# SOGAR = SeriesOlsGainsAndRisk()
+# SOGAR.run_1()
+# results_1=reformat_run_1()
+#
+# # 普通OLS回归:用 gains/S = RV + QVV + gains/S(-1) 在时间序列上回归
+# # gains/S 是一个单条时间序列，每个时间点上的值为所有moneyness对应的均值
+# SOGAR = SeriesOlsGainsAndRisk()
+# SOGAR.run_2()
+# results_2=reformat_run_2()
+#
 # # 普通OLS回归:用 gains/S = IV + QVV + gains/S(-1) 在时间序列上回归(已废弃!!)
 # # gains/S 是多条时间序列，按照moneyness(K/F)分别在每种moneyness上进行回归
 # SOGAR = SeriesOlsGainsAndRisk()
 # SOGAR.run_3()
 # results_3=reformat_run_3()
 # pass
+########################################################################################################################
+#七.五.计算仅有VV风险的期权收益
+########################################################################################################################
+from 项目文件.计算剔除波动率风险的收益 import remove_RV_gains, remove_IV_gains,Summary_gains_except_Voltility
+
+#计算剔除波动率风险后的期权收益
+remove_RV_gains()
+remove_IV_gains()
+Summary_gains_except_Voltility()#对计算好的数据进行描述性统计分析
+
+#计算独立分离的VV风险溢价
+
+
 ########################################################################################################################
 #八.计算跳跃风险，并拟合
 ########################################################################################################################

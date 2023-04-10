@@ -253,8 +253,7 @@ class DeltaNeutralGains2():
             C.FutureDelta] * \
                                (self.option['next_FutureClose'] - self.option[C.FutureClose]) - \
                                self.option[self.col_RisklessRate] / 100 * \
-                               (self.option[self.col_ClosePrice] - self.option[C.FutureDelta] * self.option[
-                                   C.FutureClose]) * self.tao
+                               (self.option[self.col_ClosePrice]) * self.tao
 
         # 计算gains/S
         self.option[C.Gains_to_underlying] = self.option[C.Gains] / self.option[C.UnderlyingScrtClose]
@@ -271,13 +270,44 @@ class DeltaNeutralGains2():
 
         self.option.to_csv(path_save, encoding='utf_8_sig', index=False)
 
+    # 对delta中性收益进行描述性统计分析
+    def gains_delta_neutral_summary(self):
+        self.option = self.option[
+            ((self.option[C.KF] >= 0.97) & (self.option[C.KF] <= 1.1) & (self.option[C.CallOrPut] == 'C')) | \
+            ((self.option[C.KF] >= 0.90) & (self.option[C.KF] <= 1.03) & (self.option[C.CallOrPut] == 'P'))]
+
+        # 剔除极端值
+        self.option = self.option[
+            (self.option[C.Gains_to_underlying] >= self.option[C.Gains_to_underlying].quantile(0.01)) & \
+            (self.option[C.Gains_to_underlying] <= self.option[C.Gains_to_underlying].quantile(0.99))]
+
+        # 按照在值程度对样本分类
+        self.option[C.KF_minus_1] = self.option[C.KF] - 1
+        self.option[C.KF_minus_1_bin] = self.option[C.CallOrPut] + (
+            pd.cut(self.option[C.KF_minus_1], bins=MONEYNESS_BIN)).astype(str)
+
+        col_panel_Gains = self.option[C.KF_minus_1_bin].unique()
+
+        # 按照剩余到期时间对样本分类
+        self.option[C.Maturity_bin] = (
+            pd.cut(self.option[C.RemainingTerm], bins=MATURITY_BIN)).astype(str)
+
+        summary = pd.pivot_table(self.option[[C.KF_minus_1_bin, C.Maturity_bin, C.Gains_to_underlying]].dropna(),
+                                 index=[C.KF_minus_1_bin], columns=[C.Maturity_bin], \
+                                 values=[C.Gains_to_underlying], aggfunc=[np.mean, np.std]
+                                 )
+
+        # 为了展示简洁，数字全部乘以10000处理
+        summary *= 10000
+        summary.round(3).to_csv(PATH_GAINS_DELTA_NEUTRAL_SUMMARY, encoding='utf_8_sig')
+
 
 if __name__=='__main__':
-    # DNG = DeltaNeutralGains2(path_option=PATH_50ETF_OPTION)
-    # DNG.run(path_save=PATH_GAINS_DELTA_NEUTRAL_ChenRong2011)
-
-    DNG=DeltaNeutralGains(path_option=PATH_50ETF_OPTION)
+    DNG = DeltaNeutralGains2(path_option=PATH_50ETF_OPTION)
     DNG.run(path_save=PATH_GAINS_DELTA_NEUTRAL_ChenRong2011)
+
+    # DNG=DeltaNeutralGains(path_option=PATH_50ETF_OPTION)
+    # DNG.run(path_save=PATH_GAINS_DELTA_NEUTRAL_ChenRong2011)
 
 
 

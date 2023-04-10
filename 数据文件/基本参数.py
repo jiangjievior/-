@@ -9,6 +9,7 @@ PATH_DERIVE=data_real_path('数据文件/原始数据/个股期权合约日交�
 PATH_50ETF_5MIN=data_real_path('数据文件/原始数据/50ETF五分钟收盘价.csv')
 PATH_50ETF_1MIN=data_real_path('数据文件/原始数据/50ETF一分钟收盘价.csv')
 PATH_50ETF=data_real_path('数据文件/原始数据/50ETF日度收盘价.csv')
+PATH_50ETF_FUTURE=data_real_path('数据文件/原始数据/股指期货日交易数据225129281/FFUT_FDT.csv')
 
 #生成数据路径
 PATH_50ETF_OPTION=data_real_path('数据文件/生成数据')+'/上证50ETF期权数据.csv'
@@ -35,7 +36,7 @@ DAYS_OF_MONTH_NATURAL=30#一个月中自然日个数
 
 WINDOWS_DAYS_NATURAL=[int(x*DAYS_OF_MONTH_NATURAL) for x in WINDOWS_MONTH]#常需考察的期权剩余到期天数
 WINDOWS_YEARS_NATURAL=[X/DAYS_OF_YEAR_NATURAL for X in WINDOWS_DAYS_NATURAL]#常需考察的期权剩余到期年数
-WINDOWS_INDEX=[1,3,4,5]#剩余到期时间的位置号：本文重点使用的剩余到期时间为1/2,1,2,3个月，其余为稳健性检验
+WINDOWS_INDEX=[1,3,4]#剩余到期时间的位置号：本文重点使用的剩余到期时间为1/2,1,2,3个月，其余为稳健性检验
 
 PATH_P_VV_2=data_real_path('数据文件/生成数据') + '/已实现vol_of_vol_2.csv'
 PATH_P_VV_3=data_real_path('数据文件/生成数据') + '/已实现vol_of_vol_3.csv'
@@ -132,8 +133,8 @@ MODELS_GAINS_OLS_RV_QVV={
 #计算剔除波动率风险的收益
 PATH_REMOVE_RV_GAINS=data_real_path('数据文件/生成数据') + '/剔除已实现波动率风险后的期权中性收益.csv'
 PATH_REMOVE_IV_GAINS=data_real_path('数据文件/生成数据') + '/剔除隐含波动率风险后的期权中性收益.csv'
-PATH_REMOVE_RV_GAINS_SUMMRY=data_real_path('数据文件/生成数据') + '/剔除已实现波动率风险后的期权中性收益的描述性统计分析.csv'
-PATH_REMOVE_IV_GAINS_SUMMRY=data_real_path('数据文件/生成数据') + '/剔除隐含波动率风险后的期权中性收益的描述性统计分析.csv'
+PATH_REMOVE_GAINS_SUMMRY=data_real_path('数据文件/生成数据') + '/剔除波动率风险后的期权中性收益的描述性统计分析.csv'
+
 
 
 
