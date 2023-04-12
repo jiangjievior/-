@@ -12,11 +12,11 @@ import os
 ########################################################################################################################
 #一、数据基本处理
 ########################################################################################################################
-# from 项目文件.数据清洗 import get_data, clean_data
-#
-#  #1.数据清洗
-# data = get_data()
-# data = clean_data(data,path_save=PATH_50ETF_OPTION)
+from 项目文件.数据清洗 import get_data, clean_data
+
+ #1.数据清洗
+data = get_data()
+data = clean_data(data,path_save=PATH_50ETF_OPTION)
 
 ########################################################################################################################
 #二.计算隐含波动率 和 隐含波动率的波动率
@@ -26,67 +26,67 @@ from 项目文件.拟合隐含波动率曲面 import construct_volatility_surfac
 from 项目文件.绘图.绘制IV和QVV的三维坐标图 import plot_3D_surface
 from 项目文件.计算隐含vol_of_vol import implied_vol_of_vol, vol_of_vol_moneyness
 
-# #1.拟合隐含波动率曲面时间序列
-# option = pd.read_csv(PATH_50ETF_OPTION)
-# construct_volatility_surface(data=option,
-#                              grids=[
-#                                  MONEYNESS_KF,#在值程度
-#                                  WINDOWS_YEARS_NATURAL#剩余到期时间
-#                              ],
-#                              path_save=PATH_IV_SURFACE_SERIES
-#                              )
-#
-# #2.绘制隐含波动率的三维坐标图
-# IV = pd.read_csv(PATH_IV_SURFACE_SERIES)
-# IV = pd.pivot_table(IV, columns=[C.KF], index=['years'], values=['IV'])['IV']
-# IV.index = WINDOWS_DAYS_NATURAL
-# IV.sort_index(ascending=True, inplace=True)
-# plot_3D_surface(data=IV,
-#                 x_label='Maturity(days)',
-#                 y_label=C.KF,
-#                 z_label='IV',
-#                 save_path=PATH_IV_SURFACE_3D)
-#
-#
-# #3.计算隐含波动率的波动率
-# implied_vol_of_vol(PATH_IV_SURFACE_SERIES,path_save=PATH_Q_VV)#计算基于平值期权计算的VV
-# vol_of_vol_moneyness(path_save=PATH_Q_VV_Moneyness)#计算基于不同在值程度期权计算的VV
+#1.拟合隐含波动率曲面时间序列
+option = pd.read_csv(PATH_50ETF_OPTION)
+construct_volatility_surface(data=option,
+                             grids=[
+                                 MONEYNESS_KF,#在值程度
+                                 WINDOWS_YEARS_NATURAL#剩余到期时间
+                             ],
+                             path_save=PATH_IV_SURFACE_SERIES
+                             )
 
-# #4.绘制隐含VV曲面3D图
-# VV=pd.read_csv(PATH_Q_VV_Moneyness)
-# VV=pd.pivot_table(VV,index=[C.KF],values=[str(x) for x in WINDOWS_DAYS_NATURAL[:-2]])[[str(x) for x in WINDOWS_DAYS_NATURAL[:-2]]]
-# VV.columns=VV.columns.astype(int)
-# plot_3D_surface(data = VV.T,
-#                 x_label = 'Maturity(days)',
-#                 y_label = C.KF,
-#                 z_label = 'QVV',
-#                 save_path = PATH_QVV_SURFACE_3D)
-#
-#
-# pass
+#2.绘制隐含波动率的三维坐标图
+IV = pd.read_csv(PATH_IV_SURFACE_SERIES)
+IV = pd.pivot_table(IV, columns=[C.KF], index=['years'], values=['IV'])['IV']
+IV.index = WINDOWS_DAYS_NATURAL
+IV.sort_index(ascending=True, inplace=True)
+plot_3D_surface(data=IV,
+                x_label='Maturity(days)',
+                y_label=C.KF,
+                z_label='IV',
+                save_path=PATH_IV_SURFACE_3D)
+
+
+#3.计算隐含波动率的波动率
+implied_vol_of_vol(PATH_IV_SURFACE_SERIES,path_save=PATH_Q_VV)#计算基于平值期权计算的VV
+vol_of_vol_moneyness(path_save=PATH_Q_VV_Moneyness)#计算基于不同在值程度期权计算的VV
+
+#4.绘制隐含VV曲面3D图
+VV=pd.read_csv(PATH_Q_VV_Moneyness)
+VV=pd.pivot_table(VV,index=[C.KF],values=[str(x) for x in WINDOWS_DAYS_NATURAL[:-2]])[[str(x) for x in WINDOWS_DAYS_NATURAL[:-2]]]
+VV.columns=VV.columns.astype(int)
+plot_3D_surface(data = VV.T,
+                x_label = 'Maturity(days)',
+                y_label = C.KF,
+                z_label = 'QVV',
+                save_path = PATH_QVV_SURFACE_3D)
+
+
+pass
 ########################################################################################################################
 #三.计算已实现波动率 和 已实现含波动率的波动率
 ########################################################################################################################
-# from 项目文件.计算已实现波动率 import RV
-# from 项目文件.计算已实现vol_of_vol import realized_vol_of_vol
-#
-# #1.计算已实现波动率
-# RV(path_save=PATH_RV)
+from 项目文件.计算已实现波动率 import RV
+from 项目文件.计算已实现vol_of_vol import realized_vol_of_vol
 
-# #2.计算已实现含波动率的波动率(由于找不到合适的参考问献，已经废弃)
-# realized_vol_of_vol(path_close_5_min=PATH_50ETF_5MIN,
-#                     windows=WINDOWS_DAYS,
-#                     path_save=PATH_P_VV,
-#                     type=1
-#                     )
+#1.计算已实现波动率
+RV(path_save=PATH_RV)
+
+#2.计算已实现含波动率的波动率(由于找不到合适的参考问献，已经废弃)
+realized_vol_of_vol(path_close_5_min=PATH_50ETF_5MIN,
+                    windows=WINDOWS_DAYS,
+                    path_save=PATH_P_VV,
+                    type=1
+                    )
 ########################################################################################################################
 #三.五.计算偏度和峰度
 ########################################################################################################################
-# from 项目文件.计算偏度和峰度 import P_SKEW, Q_SKEW_KURT
-#
-# P_SKEW()
-#
-# Q_SKEW_KURT()
+from 项目文件.计算偏度和峰度 import P_SKEW, Q_SKEW_KURT
+
+P_SKEW()
+
+Q_SKEW_KURT()
 
 ########################################################################################################################
 #四.判断风险的系统性与正负性
@@ -120,17 +120,18 @@ from 项目文件.计算隐含vol_of_vol import implied_vol_of_vol, vol_of_vol_m
 #######################################################################################################################
 from 项目文件.计算delta中性收益 import DeltaNeutralGains, DeltaNeutralGains2
 
+#(1和2只能使用一种，另一种必须注释掉。已经证实，2更加科学且可操作)
 
 # #1.用上证50ETF指数计算delta中性收益，并对delta中性收益进行描述性统计分析
 # DNG = DeltaNeutralGains(path_option=PATH_50ETF_OPTION)
 # DNG.run(path_save=PATH_GAINS_DELTA_NEUTRAL_ChenRong2011)
 # DNG.gains_delta_neutral_summary()
 
-# #2.用上证50ETF指数期货计算delta中性收益，并对delta中性收益进行描述性统计分析
-# ##参考：陈蓉2019，《波动率风险和波动率风险溢酬 中国的独特现象?》，p3005
-# DNG = DeltaNeutralGains2(path_option=PATH_50ETF_OPTION)
-# DNG.run(path_save=PATH_GAINS_DELTA_NEUTRAL_ChenRong2011)
-# DNG.gains_delta_neutral_summary()
+#2.用上证50ETF指数期货计算delta中性收益，并对delta中性收益进行描述性统计分析
+##参考：陈蓉2019，《波动率风险和波动率风险溢酬 中国的独特现象?》，p3005
+DNG = DeltaNeutralGains2(path_option=PATH_50ETF_OPTION)
+DNG.run(path_save=PATH_GAINS_DELTA_NEUTRAL_ChenRong2011)
+DNG.gains_delta_neutral_summary()
 
 
 ########################################################################################################################

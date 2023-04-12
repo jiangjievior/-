@@ -214,44 +214,29 @@ class DeltaNeutralGains2():
         #读取期货数据
         future=pd.read_csv(PATH_50ETF_FUTURE)
         future=future[future['Trdvar']=='上证50股指期货']
-        future.columns
 
         future.rename(columns={'Trddt':C.TradingDate,'Deldt':C.FutureExpiration,'Clsprc':C.FutureClose},inplace=True)
         #期货距离到期日天数
-        future['FutureDays']=(pd.to_datetime(future[C.FutureExpiration])-pd.to_datetime(future[C.TradingDate])).astype(str).str[:-4].astype(int)
+        future[C.FutureDays]=(pd.to_datetime(future[C.FutureExpiration])-pd.to_datetime(future[C.TradingDate])).astype(str).str[:-4].astype(int)
         #期货距离到期日年数
-        future[C.FutureRemainingTerm]=future['FutureDays']/365
+        future[C.FutureRemainingTerm]=future[C.FutureDays]/365
         #计算次日期货价格
         future[C.FutureClose]/=1000
         future_ = future[[C.TradingDate, C.FutureClose]].drop_duplicates().sort_values(
             C.TradingDate)
-        future['next_FutureClose'] = future_[C.FutureClose].shift(-1)
+        future[C.next_FutureClose] = future_[C.FutureClose].shift(-1)
         #期货到期月份
         future[C.ExpirationMonth]=future[C.FutureExpiration].str[:7]
         self.option[C.ExpirationMonth]=self.option[C.ExerciseDate].str[:7]
-
-
-
-        self.option=pd.merge(self.option,future[[C.TradingDate,C.FutureClose,C.FutureExpiration,C.FutureRemainingTerm,C.ExpirationMonth,'next_FutureClose']],on=[C.TradingDate,C.ExpirationMonth])
-
+        self.option=pd.merge(self.option,future[[C.TradingDate,C.FutureClose,C.FutureExpiration,C.FutureRemainingTerm,C.ExpirationMonth,C.next_FutureClose]],on=[C.TradingDate,C.ExpirationMonth])
+        #计算期货Delta
         self.option[C.FutureDelta]=self.option[C.Delta]*np.exp(-self.option[C.FutureRemainingTerm]*self.option[C.RisklessRate]/100)
 
 
-
-
-
-
-
-
-
-
-
-
-        # 计算次日股票价格
-
-        self.option['gains'] = self.option['next_Close'] - self.option[self.col_ClosePrice] - self.option[
+        # 计算期权对冲的Delta收益
+        self.option[C.Gains] = self.option[C.next_Close] - self.option[self.col_ClosePrice] - self.option[
             C.FutureDelta] * \
-                               (self.option['next_FutureClose'] - self.option[C.FutureClose]) - \
+                               (self.option[C.next_FutureClose] - self.option[C.FutureClose]) - \
                                self.option[self.col_RisklessRate] / 100 * \
                                (self.option[self.col_ClosePrice]) * self.tao
 
@@ -259,13 +244,6 @@ class DeltaNeutralGains2():
         self.option[C.Gains_to_underlying] = self.option[C.Gains] / self.option[C.UnderlyingScrtClose]
         # 计算gains/期权价格
         self.option[C.Gains_to_option] = self.option[C.Gains] / self.option[C.ClosePrice]
-
-        # C_gains=self.option[self.option[C.CallOrPut]=='C']
-        # C_gains=C_gains[C_gains[C.TradingDate]<='2016-12-31']
-        # C_gains[C.Gains_to_underlying].describe()
-        # pd.pivot_table(C_gains,index=[C.TradingDate],values=[C.Gains_to_underlying]).describe()
-
-
 
 
         self.option.to_csv(path_save, encoding='utf_8_sig', index=False)

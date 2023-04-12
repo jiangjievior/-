@@ -56,6 +56,7 @@ class Columns():
     ExerciseDate = 'ExerciseDate'
     TradingDate = 'TradingDate'
     ClosePrice = 'ClosePrice'
+    next_Close='next_Close'#期权次日收盘价
     UnderlyingScrtClose = 'UnderlyingScrtClose'
     RemainingTerm = 'RemainingTerm'
     RisklessRate = 'RisklessRate'
@@ -82,8 +83,10 @@ class Columns():
     KF_minus_1_bin = 'K/F-1_bin'
     Maturity_bin='Maturity_bin'
     FutureClose='FutureClose'#期货收盘价
+    next_FutureClose='next_FutureClose'#期货次日收盘价
     FutureExpiration='FutureExpiration'#期货到期日期
-    FutureDelta='FutureDelta'
+    FutureDays='FutureDays'##期货到期天数
+    FutureDelta='FutureDelta'#期货Delta
     FutureRemainingTerm='FutureRemainingTerm'#期货距离到期日剩余年数
     ExpirationMonth='ExpirationMonth'#到期月份
     OptionExpirationMonth='OptionExpirationMonth'#期权到期月份
@@ -93,6 +96,8 @@ class Columns():
     P_KURT = 'P_KURT'  # P测度的峰度
     Q_SKEW = 'Q_SKEW'  # Q测度的偏度
     Q_KURT = 'Q_KURT'  # Q测度的峰度
+    Volga='Volga'#Volga
+    gains_VV='gains_volga'#独立VV风险溢价
 
 
 
@@ -135,8 +140,11 @@ PATH_REMOVE_RV_GAINS=data_real_path('数据文件/生成数据') + '/剔除已�
 PATH_REMOVE_IV_GAINS=data_real_path('数据文件/生成数据') + '/剔除隐含波动率风险后的期权中性收益.csv'
 PATH_REMOVE_GAINS_SUMMRY=data_real_path('数据文件/生成数据') + '/剔除波动率风险后的期权中性收益的描述性统计分析.csv'
 
-
-
+#计算独立VV风险溢价
+PATH_INDEPENDENT_VV_PREMIUM=data_real_path('数据文件/生成数据') + '/独立VV风险溢价.csv'
+PATH_INDEPENDENT_VV_PREMIUM_SUMMARY=data_real_path('数据文件/生成数据') + '/独立VV风险溢价描述性统计分析.csv'
+PATH_PLOT_GAINS_AND_VOLAG=data_real_path('数据文件/生成数据') + '/独立VV风险溢价统计特征与Volga关系曲线.png'
+PATH_INDEPENDENT_VV_PREMIUM_MONEYNESS_SUMMARY=data_real_path('数据文件/生成数据') + '/基于在值程度独立VV风险溢价描述性统计分析.csv'
 
 #跳跃风险
 PATH_JUMP=data_real_path('数据文件/生成数据') + '/跳跃风险时间序列.csv'
