@@ -10,14 +10,15 @@ import matplotlib.pyplot as plt
 from scipy import stats
 # Statstic: 代表显著性水平
 # P: 代表概率论与数理统计中的P值
+import matplotlib.pyplot as plt
+import numpy as np
 
-# # 对随机样本进行检验
-# jarque_bera_test = stats.jarque_bera(y_unknow)
-# print("JB Test Statstic:{}   Pvalue:{}".format(jarque_bera_test.statistic,jarque_bera_test.pvalue))
+plt.rcParams['font.sans-serif'] = ['SimHei']  # 用来正常显示中文标签
+plt.rcParams['axes.unicode_minus'] = False  # 用来正常显示负号
 
 
-
-if __name__=='__main__':
+#计算独立VV风险溢价
+def compute_independent_VV_premium():
     gains=pd.read_csv(PATH_GAINS_DELTA_NEUTRAL_ChenRong2011)
     gains['d1']=(np.log(gains[C.UnderlyingScrtClose]/gains[C.StrikePrice])+(gains[C.RisklessRate]/100+gains[C.ImpliedVolatility]**2/2)\
                  *gains[C.RemainingTerm])/(gains[C.ImpliedVolatility]*np.sqrt(gains[C.RemainingTerm]))
@@ -28,13 +29,14 @@ if __name__=='__main__':
 
     gains[C.Volga]=gains[C.Vega]*gains['d1']*(gains['d1']-gains[C.ImpliedVolatility]*np.sqrt(gains[C.RemainingTerm]))/gains[C.ImpliedVolatility]
 
-
     #计算volga收益
-    gains[C.gains_VV] =(gains[C.Gains]-gains[C.Vega]*(1/365)*(gains[C.RV]**2-gains[C.ImpliedVolatility]**2))/(gains['Volga']*(1/365))
+    gains[C.gains_VV] =(gains[C.Gains]-gains[C.Vega]*(1/365)*(gains[C.RV]**2-gains[C.ImpliedVolatility]**2))/(gains[C.Volga]*(1/365))
     gains.to_csv(PATH_INDEPENDENT_VV_PREMIUM,encoding='utf_8_sig',index=False)
+    return gains
 
 
-    #不同Volga取值范围下的volga中性收益描述性统计分析
+#不同Volga取值范围下的volga中性收益描述性统计分析
+def independent_VV_premium_different_volga(gains):
     results=[]
     for volga in np.arange(1,41)/100:
 
@@ -51,13 +53,13 @@ if __name__=='__main__':
     results=pd.DataFrame(results,columns=[C.Volga]+cols+['NumSample'])
     results.to_csv(PATH_INDEPENDENT_VV_PREMIUM_SUMMARY,encoding='utf_8_sig',index=False)
 
-    #绘制均值、标准差、偏度、极值 与Volga的图
-    import matplotlib.pyplot as plt
-    import numpy as np
+    return results
 
-    plt.rcParams['font.sans-serif'] = ['SimHei']  # 用来正常显示中文标签
-    plt.rcParams['axes.unicode_minus'] = False  # 用来正常显示负号
 
+
+
+#绘制均值、标准差、偏度、极值 与Volga的图
+def plot_VV_and_vloga(results):
     fig = plt.figure(num=1, figsize=(12, 8))  # 创建一块总画布
 
     # 画块ax1
@@ -103,8 +105,9 @@ if __name__=='__main__':
     plt.savefig(PATH_PLOT_GAINS_AND_VOLAG)
 
 
-    #绘制不同在值程度下的独立VV风险溢价描述性统计分析特征(使用Volga>0.13)
-    gains=gains[gains[C.Volga] >= 0.04]
+#绘制不同在值程度下的独立VV风险溢价描述性统计分析特征(使用Volga>0.05)
+def independent_VV_premium_different_moneyness(gains):
+    gains=gains[gains[C.Volga] >= 0.05]
     #gains_pivot=pd.pivot_table(gains[gains[C.Volga]>=0.04],index=[C.TradingDate],columns=[C.KF_minus_1_bin],values=[C.gains_VV])[C.gains_VV]
     results_moneyness=[]
     for col in gains[C.KF_minus_1_bin].unique():
@@ -117,6 +120,22 @@ if __name__=='__main__':
     results_moneyness=pd.DataFrame(results_moneyness,columns=['Moneyness']+cols+['NumSample'])
     results_moneyness.to_csv(PATH_INDEPENDENT_VV_PREMIUM_MONEYNESS_SUMMARY,encoding='utf_8_sig',index=False)
 
+    return results_moneyness
+
+
+
+if __name__=='__main__':
+    # 计算独立VV风险溢价
+    gains=compute_independent_VV_premium()
+
+    # 不同Volga取值范围下的volga中性收益描述性统计分析
+    results=independent_VV_premium_different_volga(gains=gains)
+
+    # 绘制均值、标准差、偏度、极值 与Volga的图
+    plot_VV_and_vloga(results)
+
+    # 绘制不同在值程度下的独立VV风险溢价描述性统计分析特征(使用Volga>0.05)
+    results_moneyness=independent_VV_premium_different_moneyness(gains)
     
 
 

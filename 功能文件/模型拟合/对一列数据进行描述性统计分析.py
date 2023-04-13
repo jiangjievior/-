@@ -25,7 +25,7 @@ def describe(data):
     percent_positive = f'{round((data>0).sum().values[0] / len(data) * 100, 2)}%'
     #计算AR(1)系数
     model = ARIMA(data, order=(1, 0, 0)).fit()
-    AR1 = model.params['ar.L1']  # 系数
+    AR1 = round(model.params['ar.L1'],3)  # 系数
     Number=len(data)
 
 

@@ -16,7 +16,11 @@ plt.rcParams['axes.unicode_minus']=False#用于正常显示负号
 def plot_dentisty():
     gains=pd.read_csv(PATH_GAINS_DELTA_NEUTRAL_ChenRong2011)
     gains
-    gains = gains[gains[C.Delta].abs() <= 0.5]
+    # 剔除实值期权
+    # 参考：陈蓉2019，《波动率风险和波动率风险溢酬 中国的独特现象?》，p3005
+    gains = gains[
+    ((gains[C.KF] >= 0.97) & (gains[C.KF] <= 1.1) & (gains[C.CallOrPut] == 'C')) | \
+    ((gains[C.KF] >= 0.90) & (gains[C.KF] <= 1.03) & (gains[C.CallOrPut] == 'P'))]
 
     #期权收益：原始收益、delta中性收益、剔除波动率风险后的delta中性收益、剔除所有风险后的delta中性收益
     col_gains=['Change1',C.Gains,'gains_RV','gains_IV']

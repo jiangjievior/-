@@ -18,6 +18,7 @@ PATH_RV=data_real_path('数据文件/生成数据') + '/已实现波动率.csv'
 PATH_Q_VV=data_real_path('数据文件/生成数据') + '/隐含vol_of_vol.csv'
 PATH_P_VV=data_real_path('数据文件/生成数据') + '/已实现vol_of_vol.csv'
 PATH_Q_VV_Moneyness=data_real_path('数据文件/生成数据') + '/不同在值程度上的隐含vol_of_vol.csv'
+PATH_Q_VV_Summary=data_real_path('数据文件/生成数据') + '/隐含vol_of_vol的描述性统计分析.csv'
 PATH_FINAL_RESULTS=data_real_path('数据文件/生成数据/最终展示结果')
 
 
@@ -98,6 +99,7 @@ class Columns():
     Q_KURT = 'Q_KURT'  # Q测度的峰度
     Volga='Volga'#Volga
     gains_VV='gains_volga'#独立VV风险溢价
+    weight='weight'#样本外交易策略中，各个证券的权重
 
 
 
@@ -157,6 +159,7 @@ PATH_GAINS_OLS_RV_and_QVV_JUMP=data_real_path('数据文件/生成数据') + '/G
 #绘图
 PATH_IV_SURFACE_3D= data_real_path('数据文件/生成数据') + '/隐含波动率曲面3D图.png'
 PATH_QVV_SURFACE_3D= data_real_path('数据文件/生成数据') + '/QVV曲面3D图.png'
+PATH_PREMIUM_INDEPENDENT_AND_REMOVE=data_real_path('数据文件/生成数据') + '/不同VV风险溢价的时间序列图.png'
 
 
 #考虑偏度和峰度风险
@@ -167,7 +170,8 @@ PATH_P_KURT=data_real_path('数据文件/生成数据') + '/P峰度时间序列.
 PATH_GAINS_OLS_IV_and_QVV_QSKEW_QKURT=data_real_path('数据文件/生成数据') + '/GAINS_OLS_IV_and_QVV_QSKEW_QKURT回归结果.csv'
 PATH_GAINS_OLS_RV_and_QVV_QSKEW_QKURT=data_real_path('数据文件/生成数据') + '/GAINS_OLS_RV_and_QVV_QSKEW_QKURT回归结果.csv'
 
-
+#样本外预测与交易策略实施
+tao=1/365#投资组合持有时间
 
 
 

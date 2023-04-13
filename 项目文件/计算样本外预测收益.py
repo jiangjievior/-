@@ -1,4 +1,5 @@
 from 功能文件.模型拟合.拟合OLS模型 import OLS_model
+from 功能文件.模型拟合.计算一列数据的t检验统计结果 import t_test
 # -*- coding:utf-8 -*-
 from 功能文件.辅助功能.Debug时获取外部数据绝对路径 import data_real_path
 from 数据文件.基本参数 import *
@@ -109,8 +110,6 @@ class VegaNeutral():
         # 添加期货价格数据
         self.add_future()
 
-        #寻找平值期权
-        self.find_at_option()
 
     ##添加期货价格数据
     def add_future(self):
@@ -141,112 +140,82 @@ class VegaNeutral():
             -self.option[C.FutureRemainingTerm] * self.option[C.RisklessRate] / 100)
 
 
+
+    #计算每个期权Vega与Gamma中性组合的多头收益
+    def gains_Vega_Gamma_neutral(self,AT,option_type,i):
+        option_proflio = AT.append(option_type.loc[i, :])
+
+        # 为使Gamma和Vega保持中性，求解二元一次方程组，获得两只平值期权权重
+        A = AT.loc[:, [C.Gamma, C.Vega]].values
+        b = -option_type.loc[i, [C.Gamma, C.Vega]].values
+
+        A = np.array([[A[0, 0], A[1, 0]], [A[0, 1], A[1, 1]]])  # A代表系数矩阵
+        b = np.array([b[0], b[1]])  # b代表常数列
+        x = linalg.solve(A, b)
+
+        # 添加权重
+        option_proflio[C.weight] = x.tolist() + [1]
+
+        # 计算目标期权与对冲工具所构成的资产组合的总delta，并用期货对冲
+        delta_total = x[0] * AT[C.FutureDelta].values[0] + x[1] * AT[C.FutureDelta].values[1] + 1 * option_type.loc[
+            i, C.FutureDelta]
+
+        # 计算持有一天后的收益
+        gains_future = (option_proflio.loc[i, C.next_FutureClose] - option_proflio.loc[i, C.FutureClose]) * (delta_total)
+        gains_option = sum((option_proflio[C.next_Close] - option_proflio[C.ClosePrice]) * option_proflio[C.weight])
+        gains_risk_less = sum(
+            option_proflio[C.ClosePrice] * option_proflio[C.RisklessRate] / 100 * tao * option_proflio[C.weight])
+
+        # 计算期权组合多头的总收益
+        gains_total = gains_option - gains_future - gains_risk_less
+
+        return [gains_total,gains_option,gains_future,gains_risk_less],\
+            ['gains_total','gains_option','gains_future','gains_risk_less']
+
     #寻找平值期权
-    def find_at_option(self):
+    def run_1(self):
 
 
         #用于分类的标签
         self.option['date&maturity']=self.option[C.TradingDate]+'&'+self.option[C.ExerciseDate]
         #用于判断平值期权的KF绝对值差
         self.option['KF_diff']=(self.option[C.KF]-1).abs()
-        # #绝对值差最小的便会最接近0，也就是近似平值期权
-        # abs_KF_diff=pd.pivot_table(self.option,index=['CP&date&maturity'],values=['KF_diff'],aggfunc=[np.min])['amin']
-        # at=pd.DataFrame({
-        #     'CP&date&maturity': abs_KF_diff.index,
-        #     'KF_diff': abs_KF_diff['KF_diff'].values
-        # })
-        #
-        # at=pd.merge(at,self.option[['CP&date&maturity', 'KF_diff',C.ClosePrice,C.next_Close,C.Delta,C.Gamma,C.Vega]],on=['CP&date&maturity', 'KF_diff'])
-        # at.columns=['CP&date&maturity', 'KF_diff',C.ClosePrice+'_at',C.next_Close+'_at',C.Delta+'_at',C.Gamma+'_at',C.Vega+'_at']
 
 
         self.option.sort_values(['date&maturity','KF_diff'],ascending=True,axis=0,inplace=True)
 
+        gains_all=[]#所有的期权收益
         for type in self.option['date&maturity']:
 
             option_type=self.option[self.option['date&maturity']==type]
             option_type.reset_index(inplace=True)
             #做Vega和Gmama中性，至少需要三只期权
             if len(option_type)>=3:
-                #逐个对每个期权进行中性构造
+                #逐个对每个期权进行中性构造:为了计算方便，我们先构造组合多头，并计算其收益。组合空头收益只需要在多头收益添加负号即可
                 for i in range(len(option_type)):
-                    #在对最初两只最接近平值的期权对冲时，使用1，2，3中的两外两只期权作为对冲工具
-                    if i==0:
-                        AT=option_type.loc[[1,2],:]
-                    elif i==1:
-                        AT = option_type.loc[[0,2], :]
-                    else:
-                        AT = option_type.loc[[0, 1], :]
+                    try:
+
+                        ShortName=option_type.loc[i,C.ShortName]
+
+                        #在对最初两只最接近平值的期权对冲时，使用1，2，3中的两外两只期权作为对冲工具
+                        if i==0:
+                            AT=option_type.loc[[1,2],:]
+                            vlaues,cols=self.gains_Vega_Gamma_neutral(AT,option_type,i)
+                        elif i==1:
+                            AT = option_type.loc[[0,2], :]
+                            vlaues,cols=self.gains_Vega_Gamma_neutral(AT,option_type,i)
+                        else:
+                            AT = option_type.loc[[0, 1], :]
+                            vlaues,cols=self.gains_Vega_Gamma_neutral(AT,option_type,i)
+                        gains_all.append(type.split('&')+[ShortName]+vlaues)
+                        print(f'计算Vega和Gamma中性收益已经完成{type}')
+                    except:
+                        continue
+
+        gains_all_=pd.DataFrame(gains_all,columns=[C.TradingDate,C.ExerciseDate,C.ShortName]+cols)
+        t_test(gains_all_['gains_total'])
 
 
-                        #为使Gamma和Vega保持中性，求解二元一次方程组，获得两只平值期权权重
-                        A =AT.loc[:, [C.Gamma, C.Vega]].values
-                        b=-option_type.loc[i, [C.Gamma, C.Vega]].values
-
-                        A = np.array([[A[0,0], A[1,0]], [A[0,1], A[1,1]]])  # A代表系数矩阵
-                        b = np.array([b[0], b[1]])  # b代表常数列
-                        x = linalg.solve(A, b)
-
-                        #计算目标期权与对冲工具所构成的资产组合的总delta，并用期货对冲
-                        delta_total=x[0]*AT[C.FutureDelta].values[0]+x[1]*AT[C.FutureDelta].values[1]+1*option_type.loc[i, C.FutureDelta]
-
-                        #计算持有一天后的收益
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        #添加平值期权数据
-        self.option=pd.merge(self.option,at,on=['CP&date&maturity', 'KF_diff'],how='left')
-        at.columns
-        self.option.columns
-
-
-
-
-        self.option.columns
-
-
-
-        abs_KF_diff =pd.DataFrame({
-            'CP&date&maturity':abs_KF_diff.index,
-            'KF_diff':abs_KF_diff['KF_diff'].values,
-            'at':[True]*len(abs_KF_diff)
-        },index=range(len(abs_KF_diff)))
-        #筛选出平值期权
-
-
-
-
-
-
-        #将符合平值期权的数据添进
-        self.option=pd.merge(self.option,abs_KF_diff,on=['CP&date&maturity','KF_diff'],how='left')
-        self.option['at'].replace(np.nan,False,inplace=True)
-
-        self.option[C.ClosePrice+'at']=self.option[C.ClosePrice]*self.option['at']
-        self.option[C.next_Close + 'at'] = self.option[C.next_Close] * self.option['at']
-        self.option[C.Delta + 'at'] = self.option[C.Delta] * self.option['at']
-        self.option[C.Gamma + 'at'] = self.option[C.Gamma] * self.option['at']
-        self.option[C.Vega + 'at'] = self.option[C.Vega] * self.option['at']
 
 
 
@@ -270,8 +239,10 @@ class VegaNeutral():
 
 if __name__=='__main__':
     VN=VegaNeutral()
+    VN.run_1()
 
-
+    #交易策略：构造一个组合：选择一只目标期权进行做多操作，并使用另外两只期权保证Gamma和Vega中性，最后根据总delta补充相应得期货，以保证组合得delta中性
+    #将整个投资组合卖空，便可以获得正的VV风险收益
     TS=TradeStrategys()
     TS.run_1()
 

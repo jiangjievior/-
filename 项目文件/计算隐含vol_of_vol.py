@@ -5,8 +5,11 @@ import os
 import datetime,time
 import sas7bdat
 from sas7bdat import SAS7BDAT
+
+from 功能文件.模型拟合.对一列数据进行描述性统计分析 import describe
 from 功能文件.辅助功能.Debug时获取外部数据绝对路径 import data_real_path
 from 数据文件.基本参数 import *
+
 
 
 #在各个剩余到期时间上，使用平值隐含波动率计算vol-of-vol
@@ -55,7 +58,21 @@ def vol_of_vol_moneyness(path_save=False):
     if path_save:
         VV_s.to_csv(PATH_Q_VV_Moneyness,encoding='utf_8_sig',index=False)
 
+    # values, cols = describe(data.tolist())
+    # mean, median, skew, kurt, std, min_, max_, percent_negative, percent_positive, AR1, Number, t, p, star = values
 
+
+#隐含vol_of_vol的描述性统计分析
+def vol_of_vol_summary():
+    VV=pd.read_csv(PATH_Q_VV_Moneyness)
+    VV=VV[VV[C.KF]==1]
+    summary=[]
+    for day in WINDOWS_DAYS_NATURAL:
+        values,cols=describe(VV[str(day)])
+        summary.append([day]+values)
+    summary=pd.DataFrame(summary,columns=['Maturity']+cols)
+
+    summary.to_csv(PATH_Q_VV_Summary,encoding='utf_8_sig',index=False)
 
 
 
@@ -65,12 +82,10 @@ def vol_of_vol_moneyness(path_save=False):
 
 
 if __name__=='__main__':
+    #implied_vol_of_vol(PATH_IV_SURFACE_SERIES, path_save=PATH_Q_VV)  # 计算基于平值期权计算的VV
+    # vol_of_vol_moneyness(path_save=PATH_Q_VV_Moneyness)  # 计算基于不同在值程度期权计算的VV
+    vol_of_vol_summary()#隐含vol_of_vol的描述性统计分析
 
-    path_surface_series=data_real_path('数据文件/生成数据/隐含波动率曲面时间序列.csv')
-    path_save=data_real_path('数据文件/生成数据')+'/隐含vol_of_vol.csv'
-    implied_vol_of_vol(path_surface_series)
-
-    vol_of_vol_moneyness(path_save=PATH_Q_VV_Moneyness)
 
 
 
