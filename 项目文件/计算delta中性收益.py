@@ -217,7 +217,7 @@ class DeltaNeutralGains2():
 
         future.rename(columns={'Trddt':C.TradingDate,'Deldt':C.FutureExpiration,'Clsprc':C.FutureClose},inplace=True)
         #期货距离到期日天数
-        future[C.FutureDays]=(pd.to_datetime(future[C.FutureExpiration])-pd.to_datetime(future[C.TradingDate])).astype(str).str[:-4].astype(int)
+        future[C.FutureDays]=(pd.to_datetime(future[C.FutureExpiration])-pd.to_datetime(future[C.TradingDate])).astype(str).str[:-24].astype(int)
         #期货距离到期日年数
         future[C.FutureRemainingTerm]=future[C.FutureDays]/365
         #计算次日期货价格
@@ -270,8 +270,10 @@ class DeltaNeutralGains2():
         self.option[C.Maturity_bin] = (
             pd.cut(self.option[C.RemainingTerm], bins=MATURITY_BIN)).astype(str)
 
-        summary = pd.pivot_table(self.option[[C.KF_minus_1_bin, C.Maturity_bin, C.Gains_to_underlying]].dropna(),
-                                 index=[C.KF_minus_1_bin], columns=[C.Maturity_bin], \
+
+
+        summary = pd.pivot_table(self.option[[C.KF_minus_1_bin,  C.Gains_to_underlying]].dropna(),
+                                 index=[C.KF_minus_1_bin], \
                                  values=[C.Gains_to_underlying], aggfunc=[np.mean, np.std]
                                  )
 

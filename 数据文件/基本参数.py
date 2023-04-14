@@ -98,8 +98,13 @@ class Columns():
     Q_SKEW = 'Q_SKEW'  # Q测度的偏度
     Q_KURT = 'Q_KURT'  # Q测度的峰度
     Volga='Volga'#Volga
-    gains_VV='gains_volga'#独立VV风险溢价
+    PREMIUM_Indep_VV: str= 'gains_volga'#独立VV风险溢价
     weight='weight'#样本外交易策略中，各个证券的权重
+    gains_VN_total='gains_total'#Vega中性策略的总收益
+    gains_VN_option='gains_option'#Vega中性策略的期权收益
+    gains_VN_future='gains_future'#Vega中性策略的期货收益
+    gains_VN_risk_less='gains_risk_less'#Vega中性策略的无风险收益收益
+
 
 
 
@@ -147,6 +152,7 @@ PATH_INDEPENDENT_VV_PREMIUM=data_real_path('数据文件/生成数据') + '/独�
 PATH_INDEPENDENT_VV_PREMIUM_SUMMARY=data_real_path('数据文件/生成数据') + '/独立VV风险溢价描述性统计分析.csv'
 PATH_PLOT_GAINS_AND_VOLAG=data_real_path('数据文件/生成数据') + '/独立VV风险溢价统计特征与Volga关系曲线.png'
 PATH_INDEPENDENT_VV_PREMIUM_MONEYNESS_SUMMARY=data_real_path('数据文件/生成数据') + '/基于在值程度独立VV风险溢价描述性统计分析.csv'
+PATH_INDEPENDENT_VV_PREMIUM_SERIES=data_real_path('数据文件/生成数据') + '/独立VV风险溢价日度时间序列.csv'
 
 #跳跃风险
 PATH_JUMP=data_real_path('数据文件/生成数据') + '/跳跃风险时间序列.csv'
@@ -172,7 +178,7 @@ PATH_GAINS_OLS_RV_and_QVV_QSKEW_QKURT=data_real_path('数据文件/生成数据'
 
 #样本外预测与交易策略实施
 tao=1/365#投资组合持有时间
-
+PATH_GAINS_VEGA_NEUTRAL=data_real_path('数据文件/生成数据') + '/Vega中性交易策略收益.csv'
 
 
 

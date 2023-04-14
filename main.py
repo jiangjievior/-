@@ -11,7 +11,7 @@ import os
 
 ########################################################################################################################
 #一、数据基本处理
-########################################################################################################################
+#######################################################################################################################
 # from 项目文件.数据清洗 import get_data, clean_data
 #
 #  #1.数据清洗
@@ -25,7 +25,7 @@ import os
 # from 项目文件.拟合隐含波动率曲面 import construct_volatility_surface
 # from 项目文件.绘图.绘制IV和QVV的三维坐标图 import plot_3D_surface
 # from 项目文件.计算隐含vol_of_vol import implied_vol_of_vol, vol_of_vol_moneyness, vol_of_vol_summary
-#
+
 # #1.拟合隐含波动率曲面时间序列
 # option = pd.read_csv(PATH_50ETF_OPTION)
 # construct_volatility_surface(data=option,
@@ -35,7 +35,7 @@ import os
 #                              ],
 #                              path_save=PATH_IV_SURFACE_SERIES
 #                              )
-#
+
 # #2.绘制隐含波动率的三维坐标图
 # IV = pd.read_csv(PATH_IV_SURFACE_SERIES)
 # IV = pd.pivot_table(IV, columns=[C.KF], index=['years'], values=['IV'])['IV']
@@ -74,7 +74,7 @@ import os
 #
 # #1.计算已实现波动率
 # RV(path_save=PATH_RV)
-#
+
 # #2.计算已实现含波动率的波动率(由于找不到合适的参考问献，已经废弃)
 # realized_vol_of_vol(path_close_5_min=PATH_50ETF_5MIN,
 #                     windows=WINDOWS_DAYS,
@@ -120,7 +120,7 @@ import os
 ########################################################################################################################
 #六.计算期权delta中性收益
 #######################################################################################################################
-# from 项目文件.计算delta中性收益 import DeltaNeutralGains, DeltaNeutralGains2
+from 项目文件.计算delta中性收益 import DeltaNeutralGains, DeltaNeutralGains2
 
 #(1和2只能使用一种，另一种必须注释掉。已经证实，2更加科学且可操作)
 
@@ -129,19 +129,19 @@ import os
 # DNG.run(path_save=PATH_GAINS_DELTA_NEUTRAL_ChenRong2011)
 # DNG.gains_delta_neutral_summary()
 
-# #2.用上证50ETF指数期货计算delta中性收益，并对delta中性收益进行描述性统计分析
-# ##参考：陈蓉2019，《波动率风险和波动率风险溢酬 中国的独特现象?》，p3005
-# DNG = DeltaNeutralGains2(path_option=PATH_50ETF_OPTION)
-# DNG.run(path_save=PATH_GAINS_DELTA_NEUTRAL_ChenRong2011)
-# DNG.gains_delta_neutral_summary()
+#2.用上证50ETF指数期货计算delta中性收益，并对delta中性收益进行描述性统计分析
+##参考：陈蓉2019，《波动率风险和波动率风险溢酬 中国的独特现象?》，p3005
+DNG = DeltaNeutralGains2(path_option=PATH_50ETF_OPTION)
+DNG.run(path_save=PATH_GAINS_DELTA_NEUTRAL_ChenRong2011)
+DNG.gains_delta_neutral_summary()
 
 
 ########################################################################################################################
 #七.用波动率和波动率的波动率预测期权delta中性收益
 ########################################################################################################################
-from 项目文件.修改数据结果格式 import reformat_run_1,reformat_run_2,reformat_run_3
-from 项目文件.拟合delta中性收益与风险的时间序列关系_新版 import SeriesOlsGainsAndRisk
-
+# from 项目文件.修改数据结果格式 import reformat_run_1,reformat_run_2,reformat_run_3
+# from 项目文件.拟合delta中性收益与风险的时间序列关系_新版 import SeriesOlsGainsAndRisk
+#
 # # 普通OLS回归:用 gains/S = IV^2 + QVV + gains/S(-1) 在时间序列上回归
 # # gains/S 是一个单条时间序列，每个时间点上的值为所有moneyness对应的均值
 # SOGAR = SeriesOlsGainsAndRisk()
@@ -154,12 +154,12 @@ from 项目文件.拟合delta中性收益与风险的时间序列关系_新版 i
 # SOGAR.run_2()
 # results_2=reformat_run_2()
 #
-# 普通OLS回归:用 gains/S = IV + QVV + gains/S(-1) 在时间序列上回归(已废弃!!)
-# gains/S 是多条时间序列，按照moneyness(K/F)分别在每种moneyness上进行回归
-SOGAR = SeriesOlsGainsAndRisk()
-SOGAR.run_3()
-results_3=reformat_run_3()
-pass
+# # 普通OLS回归:用 gains/S = IV + QVV + gains/S(-1) 在时间序列上回归(已废弃!!)
+# # gains/S 是多条时间序列，按照moneyness(K/F)分别在每种moneyness上进行回归
+# SOGAR = SeriesOlsGainsAndRisk()
+# SOGAR.run_3()
+# results_3=reformat_run_3()
+# pass
 ########################################################################################################################
 #七.五.计算仅有VV风险的期权收益
 ########################################################################################################################

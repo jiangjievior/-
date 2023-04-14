@@ -53,13 +53,17 @@ def construct_volatility_surface(
 
     volatility_surface_series=[]#创建一个空列表
     for key in models.keys():
-        volatility_surface_=copy.deepcopy(volatility_surface)
-        volatility_surface_['ln(IV)']=models[key].predict(sm.add_constant(volatility_surface[['K/F', '(K/F)^2', 'years', 'years*(K/F)']]))
-        volatility_surface_['IV'] =np.exp(volatility_surface_['ln(IV)'])
-        volatility_surface_[C.TradingDate]=key
+        try:
+            volatility_surface_=copy.deepcopy(volatility_surface)
+            volatility_surface_['ln(IV)']=models[key].predict(sm.add_constant(volatility_surface[['K/F', '(K/F)^2', 'years', 'years*(K/F)']]))
+            volatility_surface_['IV'] =np.exp(volatility_surface_['ln(IV)'])
+            volatility_surface_[C.TradingDate]=key
 
-        volatility_surface_series.append(volatility_surface_)
+            volatility_surface_series.append(volatility_surface_)
+        except:
+            continue
     volatility_surface_series=pd.concat(volatility_surface_series,axis=0)#？
+    len(volatility_surface_series[C.TradingDate].unique())
 
     if path_save:
         volatility_surface_series.to_csv(path_save,encoding='utf_8_sig',index=False)

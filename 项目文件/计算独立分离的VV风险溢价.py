@@ -30,7 +30,7 @@ def compute_independent_VV_premium():
     gains[C.Volga]=gains[C.Vega]*gains['d1']*(gains['d1']-gains[C.ImpliedVolatility]*np.sqrt(gains[C.RemainingTerm]))/gains[C.ImpliedVolatility]
 
     #计算volga收益
-    gains[C.gains_VV] =(gains[C.Gains]-gains[C.Vega]*(1/365)*(gains[C.RV]**2-gains[C.ImpliedVolatility]**2))/(gains[C.Volga]*(1/365))
+    gains[C.PREMIUM_Indep_VV] = (gains[C.Gains] - gains[C.Vega] * (1 / 365) * (gains[C.RV] ** 2 - gains[C.ImpliedVolatility] ** 2)) / (gains[C.Volga] * (1 / 365))
     gains.to_csv(PATH_INDEPENDENT_VV_PREMIUM,encoding='utf_8_sig',index=False)
     return gains
 
@@ -113,7 +113,7 @@ def independent_VV_premium_different_moneyness(gains):
     for col in gains[C.KF_minus_1_bin].unique():
         gains_moneyness=gains[gains[C.KF_minus_1_bin]==col].dropna()
 
-        values, cols = describe(gains_moneyness[C.gains_VV].values.reshape(1, -1).tolist()[0])
+        values, cols = describe(gains_moneyness[C.PREMIUM_Indep_VV].values.reshape(1, -1).tolist()[0])
         results_moneyness.append([col]+values+[len(gains)])
     # gains_pivot = pd.pivot_table(gains[gains[C.Volga] >= 0.04], index=[C.TradingDate], columns=[C.KF_minus_1_bin],
     #                                  values=[C.gains_VV])[C.gains_VV]

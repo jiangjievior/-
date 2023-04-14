@@ -19,18 +19,20 @@ def get_data():
     #增加期权交易量数据
     option_volume=pd.read_csv(PATH_BASIC)
     data=pd.merge(data,option_volume[['TradingDate',
-       'ContractCode','SettlePrice', 'Change1',
-       'Change2', 'Volume', 'Position', 'Amount']],on=['TradingDate','ContractCode'])#把交易量数据加入到价格数据中
+       C.ShortName,'SettlePrice' ,'Volume', 'Position', 'Amount']],on=['TradingDate',C.ShortName],how='left')#把交易量数据加入到价格数据中
+    data.drop_duplicates([C.TradingDate,C.ShortName],inplace=True)
+
 
     #计算期权的次日价格、隐含波动率
     data.sort_values(['ContractCode','TradingDate'],inplace=True)#按照交易日和编码排序，在原表格进行替换
     data['next_Close']=data['ClosePrice'].shift(-1)#把列表上移一行
     data['next_ImpliedVolatility'] = data[C.ImpliedVolatility].shift(-1)  # 把列表上移一行
+
     #为了方便，直接排序平移，因此会把第二个期权的初始价格移动至第一个期权的末尾，需要处理！！
     data.reset_index(inplace=True)#重置索引，就地重置索引，设置inplace参数为True，否则将创建一个新的 DataFrame
     data['index']=data.index#重新分配索引
     data_drop=pd.pivot_table(data,index=[C.ContractCode],values=['index'],aggfunc=[np.nanmax])['nanmax'].reset_index()#插入数据透视表，以合约编码为索引，index对应每一合约最多持有的天数
-    data=data.loc[set(data.index)-set(data_drop['index']),:]#删掉每一份合约最后一个交易日的数据
+    data=data.loc[set(data.index)-set(data_drop['index']),:]#将每一份合约最后一个交易日的数据替换为Nan
     data=data.drop('index',axis=1) #删除索引
 
     return data
