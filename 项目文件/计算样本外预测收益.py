@@ -71,12 +71,15 @@ class TradeStrategys():
                               ((self.gains[C.KF]>=0.90)&(self.gains[C.KF]<=1.03)&(self.gains[C.CallOrPut]=='P'))]
 
 
-        self.premium_ind_VV = self.premium_ind_VV[(self.premium_ind_VV[C.PREMIUM_Indep_VV] > self.premium_ind_VV[C.PREMIUM_Indep_VV].quantile(0.05)) \
-                                                  & (self.premium_ind_VV[C.PREMIUM_Indep_VV] < self.premium_ind_VV[C.PREMIUM_Indep_VV].quantile(0.95))]
+        self.premium_ind_VV = self.premium_ind_VV[(self.premium_ind_VV[C.PREMIUM_Indep_VV] > self.premium_ind_VV[C.PREMIUM_Indep_VV].quantile(0.1)) \
+                                                  & (self.premium_ind_VV[C.PREMIUM_Indep_VV] < self.premium_ind_VV[C.PREMIUM_Indep_VV].quantile(0.9))]
         self.premium_ind_VV_pivot =pd.pivot_table(self.premium_ind_VV,index=[C.TradingDate],values=[C.PREMIUM_Indep_VV])
         self.premium_ind_VV_pivot.to_csv(PATH_INDEPENDENT_VV_PREMIUM_SERIES,encoding='utf_8_sig')
 
-        ARIMA(self.premium_ind_VV_pivot, order=(1, 0, 1)).fit()  # 拟合模型
+        for date in self.premium_ind_VV_pivot.index():
+            ARIMA(self.premium_ind_VV_pivot, order=(1, 0, 1)).fit()  # 拟合模型
+
+        self.premium_ind_VV[C.PREMIUM_Indep_VV].describe()
 
 
 
@@ -196,15 +199,16 @@ class VegaNeutralGains():
             [C.gains_VN_total,C.gains_VN_option,C.gains_VN_future,C.gains_VN_risk_less]
 
     #计算Vega中性收益时间序列
-    def run_1(self):
+    def run_1(self,
+              path_save,
+
+              ):
 
 
         #用于分类的标签
         self.option['date&maturity']=self.option[C.TradingDate]+'&'+self.option[C.ExerciseDate]
         #用于判断平值期权的KF绝对值差
         self.option['KF_diff']=(self.option[C.KF]-1).abs()
-
-        self.option=self.option.loc[self.option[C.CallOrPut]=='P',:]
 
 
         self.option.sort_values(['date&maturity','KF_diff'],ascending=True,axis=0,inplace=True)
@@ -237,7 +241,7 @@ class VegaNeutralGains():
                         continue
 
         GAINS_Vega_Neutral=pd.DataFrame(gains_all,columns=[C.TradingDate,C.ExerciseDate,C.ShortName]+cols)
-        GAINS_Vega_Neutral.to_csv(PATH_GAINS_VEGA_NEUTRAL,encoding='utf_8_sig',index=False)
+        GAINS_Vega_Neutral.to_csv(path_save,encoding='utf_8_sig',index=False)
         # gains_all_[C.gains_VN_total].describe()
 
 
@@ -245,55 +249,116 @@ class VegaNeutralGains():
     def summary_1(self):
 
         option=pd.read_csv(PATH_50ETF_OPTION)
-        GAINS_Vega_Neutral=pd.read_csv(PATH_GAINS_VEGA_NEUTRAL)
+        GAINS_Vega_Neutral=pd.read_csv(PATH_GAINS_VEGA_NEUTRAL_PUT)
         VV=pd.read_csv(PATH_Q_VV)
         VV.columns=[C.TradingDate]+COL_QVV
         premium_independent=pd.read_csv(PATH_INDEPENDENT_VV_PREMIUM)
 
 
         GAINS_Vega_Neutral=pd.merge(GAINS_Vega_Neutral,option,on=[C.TradingDate,C.ShortName])
-        GAINS_Vega_Neutral = pd.merge(GAINS_Vega_Neutral,VV,on=[C.TradingDate])
-        GAINS_Vega_Neutral = pd.merge(GAINS_Vega_Neutral, premium_independent[[C.TradingDate, C.ShortName, C.Volga, C.PREMIUM_Indep_VV]], on=[C.TradingDate, C.ShortName])
-        GAINS_Vega_Neutral=GAINS_Vega_Neutral[(GAINS_Vega_Neutral[C.gains_VN_total]>=GAINS_Vega_Neutral[C.gains_VN_total].quantile(0.005))&\
-                                              (GAINS_Vega_Neutral[C.gains_VN_total]<=GAINS_Vega_Neutral[C.gains_VN_total].quantile(0.995))]
+        GAINS_Vega_Neutral = pd.merge(GAINS_Vega_Neutral,VV,on=[C.TradingDate],how='left')
+        GAINS_Vega_Neutral = pd.merge(GAINS_Vega_Neutral, premium_independent[[C.TradingDate, C.ShortName, C.Volga, C.PREMIUM_Indep_VV]], on=[C.TradingDate, C.ShortName],how='left')
+
+        GAINS_Vega_Neutral=GAINS_Vega_Neutral[(GAINS_Vega_Neutral[C.gains_VN_total]>=GAINS_Vega_Neutral[C.gains_VN_total].quantile(0.01))&\
+                                              (GAINS_Vega_Neutral[C.gains_VN_total]<=GAINS_Vega_Neutral[C.gains_VN_total].quantile(0.99))]
         # GAINS_Vega_Neutral = GAINS_Vega_Neutral[(GAINS_Vega_Neutral[C.RemainingTerm] >= 10/365)&(GAINS_Vega_Neutral[C.RemainingTerm] <= 60/365)]
         # GAINS_Vega_Neutral=GAINS_Vega_Neutral[((GAINS_Vega_Neutral[C.KF]>=0.97)&(GAINS_Vega_Neutral[C.KF]<=1.1)&(GAINS_Vega_Neutral[C.CallOrPut]=='C'))|\
         #                       ((GAINS_Vega_Neutral[C.KF]>=0.90)&(GAINS_Vega_Neutral[C.KF]<=1.03)&(GAINS_Vega_Neutral[C.CallOrPut]=='P'))]
         # GAINS_Vega_Neutral.drop_duplicates([C.TradingDate,C.ShortName],inplace=True)
 
-        GAINS_Vega_Neutral[C.gains_VN_total]/GAINS_Vega_Neutral[C.next_FutureClose].describe()
-
-        GAINS_Vega_Neutral.loc[GAINS_Vega_Neutral['QVV30']>=GAINS_Vega_Neutral['QVV30'].quantile(0.5)][C.gains_VN_total].describe()
-
-
-
-        # GAINS_Vega_Neutral.loc[GAINS_Vega_Neutral[C.TradingDate]<='2018-12-31',:][C.gains_VN_total].describe()
+        #在符合实行策略的时机，实行交易策略，并计算收益
         GAINS_Vega_Neutral[C.gains_VN_total].describe()
-
-        pd.pivot_table(GAINS_Vega_Neutral,index=[C.TradingDate],columns=[C.CallOrPut],values=['gains_total']).describe()
-        pd.pivot_table(GAINS_Vega_Neutral, index=[C.TradingDate], columns=[C.KF_minus_1_bin],
-                       values=['gains_total']).describe()
-
+        Should_Buy=pd.read_csv(PATH_SHOULD_TRADE)
+        GAINS_Vega_Neutral=pd.merge(GAINS_Vega_Neutral,Should_Buy[[C.TradingDate,'short']],on=[C.TradingDate])
+        GAINS_Vega_Neutral[GAINS_Vega_Neutral['short']==False][C.gains_VN_total].describe()
 
 
-        #检验独立VV风险溢价与Vega中性收益之间的关系
-        GAINS_Vega_Neutral=GAINS_Vega_Neutral[GAINS_Vega_Neutral[C.Volga]>=0.05]
-        GAINS_Vega_Neutral[[C.PREMIUM_Indep_VV, 'gains_total']].corr()
+    #每日挑选一只平值期权，并使用期货和另外两只期权构造Vega中性组合，计算日度收益
+    def run_2(self,
+              path_save,
+
+              ):
+
+
+        #用于分类的标签
+        self.option['date&maturity']=self.option[C.TradingDate]+'&'+self.option[C.ExerciseDate]
+        #用于判断平值期权的KF绝对值差
+        self.option['KF_diff']=(self.option[C.KF]-1).abs()
+
+
+        self.option.sort_values(['date&maturity','KF_diff'],ascending=True,axis=0,inplace=True)
+
+        gains_all=[]#所有的期权收益
+        for trade_date in self.option[C.TradingDate].unique():
+            for exercise_date in self.option[self.option[C.TradingDate]==trade_date][C.ExerciseDate].tolist():
+                try:
+
+                    option_type=self.option[(self.option[C.TradingDate]==trade_date)&(self.option[C.TradingDate]==exercise_date)]
+                    option_type.reset_index(inplace=True)
+                    #做Vega和Gmama中性，至少需要三只期权
+                    if len(option_type)>=3:
+                        #逐个对每个期权进行中性构造:为了计算方便，我们先构造组合多头，并计算其收益。组合空头收益只需要在多头收益添加负号即可
+                            try:
+                                ShortName=option_type.loc[0,C.ShortName]
+
+                                #在对最初两只最接近平值的期权对冲时，使用1，2，3中的两外两只期权作为对冲工具
+
+                                AT=option_type.loc[[1,2],:]
+                                vlaues,cols=self.gains_Vega_Gamma_neutral_1(AT, option_type, 0)
+
+                                gains_all.append(type.split('&')+[ShortName]+vlaues)
+                                print(f'计算Vega和Gamma中性收益已经完成{type}')
+                            except:
+                                continue
+                    else:
+                        break
+                except:
+                    continue
+
+        GAINS_Vega_Neutral=pd.DataFrame(gains_all,columns=[C.TradingDate,C.ExerciseDate,C.ShortName]+cols)
+        GAINS_Vega_Neutral.to_csv(path_save,encoding='utf_8_sig',index=False)
+
+    #对2中的Vega中性收益结果进行分析
+    def summary_2(self):
+
+        option=pd.read_csv(PATH_50ETF_OPTION)
+        GAINS_Vega_Neutral=pd.read_csv(PATH_GAINS_VEGA_NEUTRAL_AT)
+        VV=pd.read_csv(PATH_Q_VV)
+        VV.columns=[C.TradingDate]+COL_QVV
+        premium_independent=pd.read_csv(PATH_INDEPENDENT_VV_PREMIUM)
+
+        # GAINS_Vega_Neutral[C.gains_VN_total].plot()
 
 
 
+        GAINS_Vega_Neutral = pd.merge(GAINS_Vega_Neutral,VV,on=[C.TradingDate],how='left')
+        GAINS_Vega_Neutral = pd.merge(GAINS_Vega_Neutral, premium_independent[[C.TradingDate, C.ShortName, C.Volga, C.PREMIUM_Indep_VV]], on=[C.TradingDate, C.ShortName],how='left')
+        GAINS_Vega_Neutral = pd.merge(GAINS_Vega_Neutral, option, on=[C.TradingDate, C.ShortName])
+        GAINS_Vega_Neutral=GAINS_Vega_Neutral[(GAINS_Vega_Neutral[C.gains_VN_total]>=GAINS_Vega_Neutral[C.gains_VN_total].quantile(0.01))&\
+                                              (GAINS_Vega_Neutral[C.gains_VN_total]<=GAINS_Vega_Neutral[C.gains_VN_total].quantile(0.99))]
+        # GAINS_Vega_Neutral = GAINS_Vega_Neutral[(GAINS_Vega_Neutral[C.RemainingTerm] >= 10/365)&(GAINS_Vega_Neutral[C.RemainingTerm] <= 60/365)]
+        # GAINS_Vega_Neutral=GAINS_Vega_Neutral[((GAINS_Vega_Neutral[C.KF]>=0.97)&(GAINS_Vega_Neutral[C.KF]<=1.1)&(GAINS_Vega_Neutral[C.CallOrPut]=='C'))|\
+        #                       ((GAINS_Vega_Neutral[C.KF]>=0.90)&(GAINS_Vega_Neutral[C.KF]<=1.03)&(GAINS_Vega_Neutral[C.CallOrPut]=='P'))]
+        # GAINS_Vega_Neutral.drop_duplicates([C.TradingDate,C.ShortName],inplace=True)
+
+        #在符合实行策略的时机，实行交易策略，并计算收益
+        GAINS_Vega_Neutral[C.gains_VN_total].describe()
+        Should_Buy=pd.read_csv(PATH_SHOULD_TRADE)
+        GAINS_Vega_Neutral=pd.merge(GAINS_Vega_Neutral,Should_Buy[[C.TradingDate,'short']],on=[C.TradingDate])
+        GAINS_Vega_Neutral[GAINS_Vega_Neutral['short']==False][C.gains_VN_total].describe()
 
 
 
+    #每日挑选一只平值期权，并使用期货和另外两只期权构造Vega中性组合，计算日度收益
+    def single_option(self):
+        Gains_Call=pd.read_csv(PATH_GAINS_VEGA_NEUTRAL_CALL)
+        Gains_Put = pd.read_csv(PATH_GAINS_VEGA_NEUTRAL_PUT)
+        Gains=pd.read_csv(PATH_GAINS_VEGA_NEUTRAL)
+        Gains
 
-        #按照看涨看跌分类
-        pd.pivot_table(GAINS_Vega_Neutral,index=[C.TradingDate,C.ShortName],columns=[C.CallOrPut],values=['gains_total'])
-
-        pd.merge(GAINS_Vega_Neutral,VV)
-
-        GAINS_Vega_Neutral
-
-
+        Option=pd.read_csv(PATH_50ETF_OPTION)
+        Gains=pd.merge(Gains,Option[[C.TradingDate,C.ShortName,C.KF_minus_1]],on=[C.TradingDate,C.ShortName])
+        pd.pivot_table(Gains,index=[C.TradingDate],values=[C.KF_minus_1],aggfunc=[np.min])
 
 
 
@@ -322,9 +387,40 @@ class VegaNeutralGains():
 
 
 if __name__=='__main__':
+    # 交易策略：构造一个组合：选择一只目标期权进行做多操作，并使用另外两只期权保证Gamma和Vega中性，最后根据总delta补充相应得期货，以保证组合得delta中性
+    # #看涨看跌混合对冲
     # VNG=VegaNeutralGains()
-    # VNG.run_1()
+    # VNG.run_1(path_save=PATH_GAINS_VEGA_NEUTRAL)
+    #
+    # #只有看涨期权
+    # VNG=VegaNeutralGains()
+    # VNG.option=VNG.option.loc[VNG.option[C.CallOrPut]=='C',:] # 选择期权类型
+    # VNG.run_1(path_save=PATH_GAINS_VEGA_NEUTRAL_CALL)
+
+    # #只有看跌期权
+    # VNG=VegaNeutralGains()
+    # VNG.option = VNG.option.loc[VNG.option[C.CallOrPut] == 'P', :]  # 选择期权类型
+    # VNG.run_1(path_save=PATH_GAINS_VEGA_NEUTRAL_PUT)
+
+    ##观察交易策略收益的统计分析
+    # VNG = VegaNeutralGains()
     # VNG.summary_1()
+
+    # # 观察单只期权的收益
+    # VNG = VegaNeutralGains()
+    # VNG.single_option()
+
+    # 每日挑选一只平值期权，并使用期货和另外两只期权构造Vega中性组合，计算日度收益
+    VNG=VegaNeutralGains()
+    VNG.run_2(path_save=PATH_GAINS_VEGA_NEUTRAL_AT)
+
+    #观察交易策略收益的统计分析
+    VNG = VegaNeutralGains()
+    VNG.summary_2()
+
+
+
+
 
     #交易策略：构造一个组合：选择一只目标期权进行做多操作，并使用另外两只期权保证Gamma和Vega中性，最后根据总delta补充相应得期货，以保证组合得delta中性
     #将整个投资组合卖空，便可以获得正的VV风险收益
