@@ -68,6 +68,7 @@ class TradeStrategys():
         # gains/S 是一个单条时间序列，每个时间点上的值为所有moneyness对应的均值
     def run_1(self):
 
+        #独立VV风险溢价数据
         self.premium_ind_VV=self.premium_ind_VV[self.premium_ind_VV[C.Volga]>=0.05]
         # 剔除实值期权
         #参考：陈蓉2019，《波动率风险和波动率风险溢酬 中国的独特现象?》，p3005
@@ -77,6 +78,7 @@ class TradeStrategys():
 
         self.premium_ind_VV = self.premium_ind_VV[(self.premium_ind_VV[C.PREMIUM_Indep_VV] > self.premium_ind_VV[C.PREMIUM_Indep_VV].quantile(0.1)) \
                                                   & (self.premium_ind_VV[C.PREMIUM_Indep_VV] < self.premium_ind_VV[C.PREMIUM_Indep_VV].quantile(0.9))]
+        #计算独立VV风险溢价时间序列
         self.premium_ind_VV_pivot =pd.pivot_table(self.premium_ind_VV,index=[C.TradingDate],values=[C.PREMIUM_Indep_VV])
         self.premium_ind_VV_pivot.to_csv(PATH_INDEPENDENT_VV_PREMIUM_SERIES,encoding='utf_8_sig')
         self.premium_ind_VV_pivot.index = list(map(lambda x:pd.datetime.strptime(x, '%Y-%m-%d'),self.premium_ind_VV_pivot.index))  # 将时间列改为专门时间格式，方便后期操作
@@ -102,63 +104,30 @@ class TradeStrategys():
         results[C.TradingDate]=results['id'].apply(lambda x:dates[x])#添加日期
         self.premium_ind_VV_pivot[C.TradingDate]=dates
         results=pd.merge(results,self.premium_ind_VV_pivot,on=[C.TradingDate])
-        results['short']=(results[C.PREMIUM_Indep_VV_pred]<results[C.PREMIUM_Indep_VV])
+        #确认可以交易的样本
+        results['long']=(results[C.PREMIUM_Indep_VV_pred]>results[C.PREMIUM_Indep_VV])
         results.to_csv(PATH_SHOULD_TRADE,encoding='utf_8_sig',index=False)
 
+
+        #读取Vega中性收益数据
         Gains_Vega_Neutral=pd.read_csv(PATH_GAINS_VEGA_NEUTRAL)
         results[C.TradingDate]=results[C.TradingDate].astype(str)
-        Gains_Vega_Neutral=pd.merge(Gains_Vega_Neutral,results[[C.TradingDate,'short']],on=[C.TradingDate])
-        # Gains_Vega_Neutral['short']*Gains_Vega_Neutral[C.gains_VN_total])
-        Gains_Vega_Neutral.loc[Gains_Vega_Neutral['short']==True,:][C.gains_VN_total].describe()
+        #将Vega收益数据与期权数据相结合
+        self.premium_ind_VV
+        self.premium_ind_VV=pd.merge(self.premium_ind_VV,Gains_Vega_Neutral,on=[C.ShortName,C.TradingDate,C.ExerciseDate])
+        #确认可交易数据
+        data =pd.merge(self.premium_ind_VV,results[[C.TradingDate,'long']],how='right')
+        data=data.loc[data['long'] == True, :].dropna()
+        data=data[(data[C.gains_VN_total]>=data[C.gains_VN_total].quantile(0.01))&(data[C.gains_VN_total]<=data[C.gains_VN_total].quantile(0.99))]
+        pd.pivot_table(data,columns=C.KF_minus_1_bin,values=[C.gains_VN_total])
+        #计算平值期权的收益获利统计
+        gains_summary=[]
+        for col in data[C.KF_minus_1_bin].unique():
+            t_test(data.loc[data[C.KF_minus_1_bin]==col,C.gains_VN_total])
 
 
 
 
-
-
-
-
-
-
-
-
-        self.premium_ind_VV[C.PREMIUM_Indep_VV].describe()
-
-
-
-
-
-        dates=list(self.gains_pivot.index)
-        self.gains_pivot[C.Gains_lag1] = self.gains_pivot[C.Gains_to_underlying].shift().fillna(method='bfill')
-        results=[]
-        for date in dates[1173:]:
-            try:
-                date_train_last_index=dates.index(date)#训练集最后一个样本所在日期的编号
-                date_test_first = dates[date_train_last_index+1]  # 测试集第一个样本所在日期
-
-                for col_X in [['QVV', 'IV']]:
-                    for day in WINDOWS_DAYS_NATURAL:
-                        col_X_=[f'{x}{day}' for x in col_X]+[C.Gains_lag1]
-                        X=self.gains_pivot.loc[dates[0]:dates[date_train_last_index],col_X_]
-
-                        Y=self.gains_pivot.loc[dates[0]:dates[date_train_last_index],C.Gains_to_underlying]
-
-                        model, params, tvalues, pvalues, resid, F, p_F, R_2 = OLS_model(X, Y)
-
-                        X_next=sm.add_constant(self.gains_pivot.loc[date_test_first:, col_X_])
-                        #X_next=sm.add_constant(pd.DataFrame(self.gains_pivot.loc[date_test_first,col_X_]).T.insert(loc=0,column='const',value=1))
-                        results.append([date,day,model.predict(X_next).values[0]])
-                        print([date,day,model.predict(X_next).values[0]])
-
-            except:
-                continue
-        results
-
-
-
-        results.to_csv(PATH_GAINS_OLS_IV_and_QVV, encoding='utf_8_sig', index=False)
-
-        return results
 
 
 
@@ -171,9 +140,6 @@ if __name__=='__main__':
 
 
 
-    #只有看跌期权
-    VNG=VegaNeutralGains()
-    VNG.run_1(path_save=PATH_GAINS_VEGA_NEUTRAL_PUT)
 
 
 
