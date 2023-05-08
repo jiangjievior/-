@@ -40,7 +40,7 @@ def construct_volatility_surface(
         model, params, tvalues, pvalues, resid, F, p_F, R_2 = OLS_model(X, Y)
 
         models[date]=model#?
-        print(f'拟合隐含波动率曲面模型已经完成{date}')
+        print(f'Fit the regression model of implied volatility have process {date}')
 
 
     #建立隐含波动率曲面时间序列

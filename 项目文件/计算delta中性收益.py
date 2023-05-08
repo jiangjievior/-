@@ -178,7 +178,7 @@ class DeltaNeutralGains2():
     # 按照陈蓉(2011)的方法筛选样本
     def filter(self):
         # 剔除交易日高于60天的期权样本
-        self.option = self.option[self.option[self.col_RemainingTerm] <= 30 / 365]
+        self.option = self.option[self.option[self.col_RemainingTerm] <= 60 / 365]
         # #剔除实值期权
         # self.option=self.option[self.option[self.col_Delta].abs()<=0.5]
 

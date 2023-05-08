@@ -1,4 +1,4 @@
-
+from matplotlib import pyplot as plt
 from statsmodels.tsa.arima_model import ARIMA
 
 from 功能文件.模型拟合.拟合OLS模型 import OLS_model
@@ -88,7 +88,7 @@ class TradeStrategys():
 
         #采用滑动窗口方式预测次日独立VV风险溢价
         results=[]
-        windows=800
+        windows=400
         for i in range(windows-1,len(dates)):
             try:
                 dates[i]
@@ -109,21 +109,69 @@ class TradeStrategys():
         results.to_csv(PATH_SHOULD_TRADE,encoding='utf_8_sig',index=False)
 
 
+    #计算策略累计收益，并绘制序列图
+    def summary_and_plot(self):
         #读取Vega中性收益数据
+        results=pd.read_csv(PATH_SHOULD_TRADE)
         Gains_Vega_Neutral=pd.read_csv(PATH_GAINS_VEGA_NEUTRAL)
         results[C.TradingDate]=results[C.TradingDate].astype(str)
         #将Vega收益数据与期权数据相结合
-        self.premium_ind_VV
         self.premium_ind_VV=pd.merge(self.premium_ind_VV,Gains_Vega_Neutral,on=[C.ShortName,C.TradingDate,C.ExerciseDate])
         #确认可交易数据
         data =pd.merge(self.premium_ind_VV,results[[C.TradingDate,'long']],how='right')
-        data=data.loc[data['long'] == True, :].dropna()
+        #data=data.loc[data['long'] == True, :].dropna()
         data=data[(data[C.gains_VN_total]>=data[C.gains_VN_total].quantile(0.01))&(data[C.gains_VN_total]<=data[C.gains_VN_total].quantile(0.99))]
         pd.pivot_table(data,columns=C.KF_minus_1_bin,values=[C.gains_VN_total])
         #计算平值期权的收益获利统计
-        gains_summary=[]
+        #当适合实施交易策略时，对合适的期权进行交易并计算其收益，再计算日度平均收益和累计日度平均收益
+        gains_summary= []
+        gains_long_cumsum={}#累加收益时间序列
         for col in data[C.KF_minus_1_bin].unique():
-            t_test(data.loc[data[C.KF_minus_1_bin]==col,C.gains_VN_total])
+            #获取指定在值程度的数据
+            gains=data.loc[data[C.KF_minus_1_bin] == col, [C.TradingDate,C.gains_VN_total,'long']]
+            #形成日度时间序列
+            gains=pd.pivot_table(gains,index=[C.TradingDate],values=[C.gains_VN_total,'long'])
+            gains['gains_long']=gains[C.gains_VN_total]*gains['long']
+
+            #计算累加日度收益
+            gains['gains_long_cumsum']=gains['gains_long'].cumsum()
+            gains_long_cumsum[col]=gains['gains_long_cumsum']
+
+            #计算可操作交易日的统计特征
+            gains_long=gains.loc[gains['long']==True,C.gains_VN_total]
+            #gains[C.gains_VN_total].mean()/(gains[C.gains_VN_total].std()/np.sqrt(len(gains)))
+
+            mean,std,skew,Num=gains_long.mean(),gains_long.std(),gains_long.skew(),len(gains_long)
+            gains_summary.append([col,mean,std,skew,Num])
+
+        gains_summary=pd.DataFrame(gains_summary,columns=['K/F-1','mean','std','skew','Num'])
+        gains_summary.loc[:,['mean','std','skew']]=gains_summary.loc[:,['mean','std','skew']].round(3)
+        gains_summary.to_csv(PATH_GAINS_VEGA_NEUTRAL_STRATEGY_SUMMARY,encoding='utf_8_sig',index=False)
+
+        #绘制累积收益增长图
+
+        import matplotlib.pyplot as plt
+        import numpy as np
+        plt.rcParams['font.sans-serif'] = ['SimHei']  # 用来正常显示中文标签
+        plt.rcParams['axes.unicode_minus'] = False  # 用来正常显示负号
+
+        fig = plt.figure(num=1, figsize=(10, 8))  # 创建一块总画布
+
+        for col in gains_long_cumsum.keys():
+            gains_long_cumsum_=gains_long_cumsum[col]
+            plt.plot(gains_long_cumsum_,label=col)
+            xticks = np.linspace(0, len(gains_long_cumsum_), 12).astype(int).tolist()[:-1]  # 被显示的横坐标刻度值的位置
+            plt.xticks(gains_long_cumsum_.index[xticks],rotation=15)
+        plt.legend(loc='upper left',fontsize='medium')
+        plt.xlabel(C.TradingDate,fontsize=15)
+        plt.ylabel('Gains',fontsize=15)
+        plt.grid(True,alpha=0.3)
+        plt.savefig(PATH_GAINS_STRATEGY_FIG)
+
+
+
+
+
 
 
 
@@ -135,23 +183,15 @@ class TradeStrategys():
 
 
 if __name__=='__main__':
+    # TS=TradeStrategys()
+    # TS.run_1()
+
     TS=TradeStrategys()
-    TS.run_1()
+    TS.summary_and_plot()
 
 
 
 
-
-
-
-
-
-    VNG.summary_1()
-
-
-
-    gains_CALL=pd.read_csv(PATH_GAINS_VEGA_NEUTRAL_CALL)
-    gains_CALL
 
 
 

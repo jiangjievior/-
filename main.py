@@ -153,7 +153,7 @@ DNG.gains_delta_neutral_summary()
 # SOGAR = SeriesOlsGainsAndRisk()
 # SOGAR.run_2()
 # results_2=reformat_run_2()
-#
+
 # # 普通OLS回归:用 gains/S = IV + QVV + gains/S(-1) 在时间序列上回归(已废弃!!)
 # # gains/S 是多条时间序列，按照moneyness(K/F)分别在每种moneyness上进行回归
 # SOGAR = SeriesOlsGainsAndRisk()
@@ -163,25 +163,25 @@ DNG.gains_delta_neutral_summary()
 ########################################################################################################################
 #七.五.计算仅有VV风险的期权收益
 ########################################################################################################################
-from 项目文件.计算剔除波动率风险的收益 import remove_RV_gains, remove_IV_gains,Summary_gains_except_Voltility
-from 项目文件.绘图.绘制两种风险溢价的序列图 import plot_premium_independent_and_remove
-from 项目文件.计算独立分离的VV风险溢价 import compute_independent_VV_premium, independent_VV_premium_different_volga, \
-    plot_VV_and_vloga, independent_VV_premium_different_moneyness
-
-
-#计算剔除波动率风险后的期权收益
-remove_RV_gains()
-remove_IV_gains()
-Summary_gains_except_Voltility()#对计算好的数据进行描述性统计分析
-
-#计算独立分离的VV风险溢价
-gains = compute_independent_VV_premium()# 计算独立VV风险溢价
-results = independent_VV_premium_different_volga(gains=gains)# 不同Volga取值范围下的volga中性收益描述性统计分析
-plot_VV_and_vloga(results)# 绘制均值、标准差、偏度、极值 与Volga的图
-results_moneyness = independent_VV_premium_different_moneyness(gains)# 绘制不同在值程度下的独立VV风险溢价描述性统计分析特征(使用Volga>0.05)
-
-# 绘制两种VV风险溢价的时间序列，包括（独立VV风险溢价、剔除波动率风险项后的期权收益）
-plot_premium_independent_and_remove()
+# from 项目文件.计算剔除波动率风险的收益 import remove_RV_gains, remove_IV_gains,Summary_gains_except_Voltility
+# from 项目文件.绘图.绘制两种风险溢价的序列图 import plot_premium_independent_and_remove
+# from 项目文件.计算独立分离的VV风险溢价 import compute_independent_VV_premium, independent_VV_premium_different_volga, \
+#     plot_VV_and_vloga, independent_VV_premium_different_moneyness
+#
+#
+# #计算剔除波动率风险后的期权收益
+# remove_RV_gains()
+# remove_IV_gains()
+# Summary_gains_except_Voltility()#对计算好的数据进行描述性统计分析
+#
+# #计算独立分离的VV风险溢价
+# gains = compute_independent_VV_premium()# 计算独立VV风险溢价
+# results = independent_VV_premium_different_volga(gains=gains)# 不同Volga取值范围下的volga中性收益描述性统计分析
+# plot_VV_and_vloga(results)# 绘制均值、标准差、偏度、极值 与Volga的图
+# results_moneyness = independent_VV_premium_different_moneyness(gains)# 绘制不同在值程度下的独立VV风险溢价描述性统计分析特征(使用Volga>0.05)
+#
+# # 绘制两种VV风险溢价的时间序列，包括（独立VV风险溢价、剔除波动率风险项后的期权收益）
+# plot_premium_independent_and_remove()
 
 ########################################################################################################################
 #八.计算跳跃风险，并拟合
@@ -245,12 +245,31 @@ reformat_run_9()
 ########################################################################################################################
 #十一.样本外交易策略收益预测
 ########################################################################################################################
+from 项目文件.计算样本外预测收益 import VegaNeutralGains
 
+# 交易策略：构造一个组合：选择一只目标期权进行做多操作，并使用另外两只期权保证Gamma和Vega中性，最后根据总delta补充相应得期货，以保证组合得delta中性
+# 看涨看跌混合对冲
+VNG = VegaNeutralGains()
+VNG.run_1(path_save=PATH_GAINS_VEGA_NEUTRAL)
 
+# 只有看涨期权
+VNG = VegaNeutralGains()
+VNG.option = VNG.option.loc[VNG.option[C.CallOrPut] == 'C', :]  # 选择期权类型
+VNG.run_1(path_save=PATH_GAINS_VEGA_NEUTRAL_CALL)
 
+# 只有看跌期权
+VNG = VegaNeutralGains()
+VNG.option = VNG.option.loc[VNG.option[C.CallOrPut] == 'P', :]  # 选择期权类型
+VNG.run_1(path_save=PATH_GAINS_VEGA_NEUTRAL_PUT)
 
+# 观察交易策略收益的统计分析
+VNG = VegaNeutralGains()
+VNG.summary_1()
 
+from 项目文件.样本外交易策略收益 import TradeStrategys
 
+TS = TradeStrategys()
+TS.summary_and_plot()
 
 ########################################################################################################################
 #终.论文中最终展示表格

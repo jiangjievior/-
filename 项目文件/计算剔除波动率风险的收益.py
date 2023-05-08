@@ -113,12 +113,9 @@ def Summary_gains_except_Voltility():
 
 
 
-
-
-
 if __name__=='__main__':
 
-    remove_RV_gains()
+    # remove_RV_gains()
 
     remove_IV_gains()
 

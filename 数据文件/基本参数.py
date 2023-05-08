@@ -184,3 +184,6 @@ PATH_GAINS_VEGA_NEUTRAL_CALL=data_real_path('数据文件/生成数据') + '/看
 PATH_GAINS_VEGA_NEUTRAL_PUT=data_real_path('数据文件/生成数据') + '/看跌期权的Vega中性交易策略收益.csv'
 PATH_SHOULD_TRADE=data_real_path('数据文件/生成数据') + '/依据预测结果应当买入的日期.csv'
 PATH_GAINS_VEGA_NEUTRAL_AT=data_real_path('数据文件/生成数据') + '/基于每日单只平值期权的Vega中性交易策略收益.csv'
+PATH_GAINS_VEGA_NEUTRAL_STRATEGY_SUMMARY=data_real_path('数据文件/生成数据') + '/基于策略的Vega中性交易策略收益汇总.csv'
+PATH_GAINS_STRATEGY_FIG=data_real_path('数据文件/生成数据') + '/Vega策略累计收益时间序列绘图.png'
+
